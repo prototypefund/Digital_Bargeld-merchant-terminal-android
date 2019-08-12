@@ -1,5 +1,6 @@
 package net.taler.merchantpos
 
+import android.net.Uri
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -12,7 +13,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, CreatePayment.OnFragmentInteractionListener, ProcessPayment.OnFragmentInteractionListener {
+    override fun onFragmentInteraction(uri: Uri) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,11 +25,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        val fab: FloatingActionButton = findViewById(R.id.fab)
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
         val toggle = ActionBarDrawerToggle(
