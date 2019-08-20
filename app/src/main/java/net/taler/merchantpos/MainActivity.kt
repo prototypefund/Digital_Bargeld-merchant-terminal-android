@@ -2,18 +2,21 @@ package net.taler.merchantpos
 
 import android.net.Uri
 import android.os.Bundle
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import androidx.core.view.GravityCompat
-import androidx.appcompat.app.ActionBarDrawerToggle
 import android.view.MenuItem
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, CreatePayment.OnFragmentInteractionListener, ProcessPayment.OnFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+    CreatePayment.OnFragmentInteractionListener, ProcessPayment.OnFragmentInteractionListener {
     override fun onFragmentInteraction(uri: Uri) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -27,13 +30,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
-        val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
 
         navView.setNavigationItemSelectedListener(this)
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        val appBarConfiguration =
+            AppBarConfiguration(setOf(R.id.createPayment, R.id.merchantSettings, R.id.merchantHistory), drawerLayout)
+
+        findViewById<Toolbar>(R.id.toolbar)
+            .setupWithNavController(navController, appBarConfiguration)
+
+        val model = ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
+        model.merchantConfig = MerchantConfig("https://backend.test.taler.net", "default", "sandbox")
+
     }
 
     override fun onBackPressed() {
@@ -63,28 +72,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        val nav: NavController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
             R.id.nav_home -> {
-                // Handle the camera action
+                nav.navigate(R.id.action_global_createPayment)
             }
-            R.id.nav_gallery -> {
-
+            R.id.nav_history -> {
+                nav.navigate(R.id.action_global_merchantHistory)
             }
-            R.id.nav_slideshow -> {
-
-            }
-            R.id.nav_tools -> {
-
-            }
-            R.id.nav_share -> {
-
-            }
-            R.id.nav_send -> {
-
+            R.id.nav_settings -> {
+                nav.navigate(R.id.action_global_merchantSettings)
             }
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
+
+
 }

@@ -7,6 +7,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
+import com.google.android.material.snackbar.Snackbar
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -28,6 +38,8 @@ class CreatePayment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
+    private lateinit var queue: RequestQueue
+    private lateinit var model: PosTerminalViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +47,63 @@ class CreatePayment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+        model = activity?.run {
+            ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
+
+        queue = Volley.newRequestQueue(context)
+    }
+
+    private fun onRequestPayment() {
+        val amount = "TESTKUDOS:10.00"
+        model.activeAmount = amount
+        var order = JSONObject().also {
+            it.put("amount", amount)
+            it.put("summary", "hello world")
+            it.put("fulfillment_url", "https://example.com")
+            it.put("instance", "default")
+        }
+
+        var reqBody = JSONObject().also { it.put("order", order) }
+
+        var req = MerchantInternalRequest(
+            Request.Method.POST,
+            model.merchantConfig!!,
+            "order",
+            null,
+            reqBody,
+            Response.Listener { onOrderCreated(it) },
+            Response.ErrorListener { onNetworkError(it) })
+
+        queue.add(req)
+
+    }
+
+    private fun onNetworkError(volleyError: VolleyError?) {
+        val mySnackbar = Snackbar.make(view!!, "Network Error", Snackbar.LENGTH_SHORT)
+        mySnackbar.show()
+    }
+
+    private fun onOrderCreated(orderResponse: JSONObject) {
+        val merchantConfig = model.merchantConfig!!
+        val orderId = orderResponse.getString("order_id")
+        val params = mapOf("order_id" to orderId, "instance" to merchantConfig.instance)
+        model.activeOrderId = orderId
+
+        var req = MerchantInternalRequest(Request.Method.GET, model.merchantConfig!!, "check-payment", params, null,
+            Response.Listener { onCheckPayment(it) }, Response.ErrorListener { onNetworkError(it) })
+        queue.add(req)
+    }
+
+    private fun onCheckPayment(checkPaymentResponse: JSONObject) {
+        if (checkPaymentResponse.getBoolean("paid")) {
+            val mySnackbar = Snackbar.make(view!!, "Already paid?!", Snackbar.LENGTH_SHORT)
+            mySnackbar.show()
+            return
+        }
+        model.activeContractUri = checkPaymentResponse.getString("contract_url")
+        findNavController().navigate(R.id.action_createPayment_to_processPayment)
     }
 
     override fun onCreateView(
@@ -42,12 +111,12 @@ class CreatePayment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_create_payment, container, false)
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
-        listener?.onFragmentInteraction(uri)
+        val view = inflater.inflate(R.layout.fragment_create_payment, container, false)
+        val requestPaymentButton = view.findViewById<Button>(R.id.button_request_payment);
+        requestPaymentButton.setOnClickListener {
+            onRequestPayment()
+        }
+        return view
     }
 
     override fun onAttach(context: Context) {
