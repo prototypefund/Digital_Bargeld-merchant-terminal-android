@@ -23,8 +23,7 @@
                 android:layout_height="275dp" tools:src="@tools:sample/backgrounds/scenic[16]"
                 android:id="@+id/qrcode" app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="32dp"
-                android:background="#CEC02424"/>
+                app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="32dp" />
         <TextView
                 android:text="Please scan QR Code or use NFC to pay"
                 android:layout_width="wrap_content"

@@ -10,7 +10,7 @@ android {
     buildToolsVersion "29.0.1"
     defaultConfig {
         applicationId "net.taler.merchantpos"
-        minSdkVersion 28
+        minSdkVersion 27
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"

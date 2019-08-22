@@ -9,7 +9,12 @@
         <action android:id="@+id/action_createPayment_to_processPayment" app:destination="@id/processPayment"/>
     </fragment>
     <fragment android:id="@+id/processPayment" android:name="net.taler.merchantpos.ProcessPayment"
-              android:label="Payment Prompt" tools:layout="@layout/fragment_process_payment"/>
+              android:label="Payment Prompt" tools:layout="@layout/fragment_process_payment">
+        <action
+                android:id="@+id/action_processPayment_to_paymentSuccess"
+                app:destination="@id/paymentSuccess"
+                app:popUpTo="@id/createPayment"/>
+    </fragment>
     <fragment android:id="@+id/merchantHistory" android:name="net.taler.merchantpos.MerchantHistory"
               android:label="Payment History" tools:layout="@layout/fragment_merchant_history"/>
     <action android:id="@+id/action_global_merchantHistory" app:destination="@id/merchantHistory"/>
@@ -17,4 +22,9 @@
     <fragment android:id="@+id/merchantSettings" android:name="net.taler.merchantpos.MerchantSettings"
               android:label="Merchant Settings" tools:layout="@layout/fragment_merchant_settings"/>
     <action android:id="@+id/action_global_merchantSettings" app:destination="@id/merchantSettings"/>
+    <fragment
+            android:id="@+id/paymentSuccess"
+            android:name="net.taler.merchantpos.PaymentSuccess"
+            android:label="Payment Received"
+            tools:layout="@layout/fragment_payment_success" />
 </navigation>

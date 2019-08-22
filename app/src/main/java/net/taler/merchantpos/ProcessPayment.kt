@@ -14,6 +14,8 @@ import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import android.opengl.ETC1.getWidth
 import android.opengl.ETC1.getHeight
+import android.os.Handler
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -22,7 +24,14 @@ import androidx.activity.addCallback
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.Volley
 import com.google.android.material.snackbar.Snackbar
+import org.json.JSONObject
+import java.net.URLEncoder
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -32,32 +41,68 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [ProcessPayment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [ProcessPayment.newInstance] factory method to
- * create an instance of this fragment.
  *
  */
 class ProcessPayment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-    private var listener: OnFragmentInteractionListener? = null
 
+    private var paused: Boolean = true
+    private lateinit var queue: RequestQueue
     private lateinit var model: PosTerminalViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
 
         model = activity?.run {
             ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
 
+        queue = Volley.newRequestQueue(context)
+
+    }
+
+    private fun onCheckPayment(checkPaymentResponse: JSONObject) {
+        if (paused) {
+            return
+        }
+        //Log.v("taler-merchant", "got check payment result ${checkPaymentResponse}")
+        if (checkPaymentResponse.getBoolean("paid")) {
+            queue.cancelAll { true }
+            findNavController().navigate(R.id.action_processPayment_to_paymentSuccess)
+            return
+        }
+    }
+
+    private fun onNetworkError(volleyError: VolleyError?) {
+        val mySnackbar = Snackbar.make(view!!, "Network Error", Snackbar.LENGTH_SHORT)
+        mySnackbar.show()
+    }
+
+    private fun checkPaid() {
+        if (paused) {
+            return
+        }
+        //Log.v("taler-merchant", "checkig if payment happened")
+        val params = mapOf("order_id" to model.activeOrderId!!, "instance" to model.merchantConfig!!.instance)
+        var req = MerchantInternalRequest(Request.Method.GET, model.merchantConfig!!, "check-payment", params, null,
+            Response.Listener { onCheckPayment(it) }, Response.ErrorListener { onNetworkError(it) })
+        queue.add(req)
+        val handler = Handler()
+        handler.postDelayed({
+            checkPaid()
+        }, 500)
+
+    }
+
+    override fun onResume() {
+        this.paused = false
+        checkPaid()
+        super.onResume()
+    }
+
+    override fun onPause() {
+        this.paused = true
+        super.onPause()
+        queue.cancelAll { true }
     }
 
     override fun onCreateView(
@@ -67,7 +112,8 @@ class ProcessPayment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_process_payment, container, false)
         val img = view.findViewById<ImageView>(R.id.qrcode)
-        val myBitmap = makeQrCode(model.activeContractUri!!)
+        val talerPayUrl = "talerpay:" + URLEncoder.encode(model.activeContractUri!!, "utf-8")
+        val myBitmap = makeQrCode(talerPayUrl)
         img.setImageBitmap(myBitmap)
         val cancelPaymentButton = view.findViewById<Button>(R.id.button_cancel_payment)
         cancelPaymentButton.setOnClickListener {
@@ -99,56 +145,6 @@ class ProcessPayment : Fragment() {
                 bmp.setPixel(x, y, if (bitMatrix.get(x, y)) Color.BLACK else Color.WHITE)
             }
         }
-        return bmp;
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        listener = null
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     *
-     * See the Android Training lesson [Communicating with Other Fragments]
-     * (http://developer.android.com/training/basics/fragments/communicating.html)
-     * for more information.
-     */
-    interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onFragmentInteraction(uri: Uri)
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ProcessPayment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ProcessPayment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        return bmp
     }
 }
