@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         isoDep.transceive(apduSelectFile())
 
-        val contractUri: String? = model.activeContractUri
+        val contractUri: String? = model.activeTalerPayUri
 
         if (contractUri != null) {
             isoDep.transceive(apduPutTalerData(1, contractUri.toByteArray()))

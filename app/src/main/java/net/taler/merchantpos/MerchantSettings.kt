@@ -8,19 +8,9 @@ import android.view.ViewGroup
 
 
 /**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [MerchantSettings.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [MerchantSettings.newInstance] factory method to
- * create an instance of this fragment.
- *
+ * Fragment that displays merchant settings.
  */
 class MerchantSettings : Fragment() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

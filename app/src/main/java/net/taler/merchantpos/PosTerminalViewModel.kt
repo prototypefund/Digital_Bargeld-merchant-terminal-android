@@ -8,7 +8,7 @@ class PosTerminalViewModel : ViewModel() {
     var merchantConfig: MerchantConfig? = null
     var activeOrderId: String? = null
     var activeAmount: String? = null
-    var activeContractUri: String? = null
+    var activeTalerPayUri: String? = null
 
     fun activeAmountPretty(): String? {
         val amount = activeAmount ?: return null

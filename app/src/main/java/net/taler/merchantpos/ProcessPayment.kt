@@ -112,7 +112,7 @@ class ProcessPayment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_process_payment, container, false)
         val img = view.findViewById<ImageView>(R.id.qrcode)
-        val talerPayUrl = "talerpay:" + URLEncoder.encode(model.activeContractUri!!, "utf-8")
+        val talerPayUrl = model.activeTalerPayUri!!;
         val myBitmap = makeQrCode(talerPayUrl)
         img.setImageBitmap(myBitmap)
         val cancelPaymentButton = view.findViewById<Button>(R.id.button_cancel_payment)

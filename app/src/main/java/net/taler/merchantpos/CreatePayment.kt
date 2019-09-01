@@ -1,14 +1,12 @@
 package net.taler.merchantpos
 
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.android.volley.Request
@@ -16,27 +14,29 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.Volley
-import org.json.JSONObject
 import com.google.android.material.snackbar.Snackbar
+import org.json.JSONObject
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [CreatePayment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [CreatePayment.newInstance] factory method to
- * create an instance of this fragment.
- *
+ * Fragment that allows the merchant to create a payment.
  */
 class CreatePayment : Fragment() {
     private lateinit var queue: RequestQueue
     private lateinit var model: PosTerminalViewModel
+
+    private var paused: Boolean = false
+
+
+    override fun onPause() {
+        super.onPause()
+        this.paused = true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        this.paused = false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,16 +54,16 @@ class CreatePayment : Fragment() {
         model.activeAmount = amount
         model.activeSubject = activity!!.findViewById<EditText>(R.id.edit_payment_subject).text
 
-        var order = JSONObject().also {
+        val order = JSONObject().also {
             it.put("amount", amount)
             it.put("summary", model.activeSubject!!)
             it.put("fulfillment_url", "https://example.com")
             it.put("instance", "default")
         }
 
-        var reqBody = JSONObject().also { it.put("order", order) }
+        val reqBody = JSONObject().also { it.put("order", order) }
 
-        var req = MerchantInternalRequest(
+        val req = MerchantInternalRequest(
             Request.Method.POST,
             model.merchantConfig!!,
             "order",
@@ -73,7 +73,6 @@ class CreatePayment : Fragment() {
             Response.ErrorListener { onNetworkError(it) })
 
         queue.add(req)
-
     }
 
     private fun onNetworkError(volleyError: VolleyError?) {
@@ -87,18 +86,24 @@ class CreatePayment : Fragment() {
         val params = mapOf("order_id" to orderId, "instance" to merchantConfig.instance)
         model.activeOrderId = orderId
 
-        var req = MerchantInternalRequest(Request.Method.GET, model.merchantConfig!!, "check-payment", params, null,
+        val req = MerchantInternalRequest(Request.Method.GET, model.merchantConfig!!, "check-payment", params, null,
             Response.Listener { onCheckPayment(it) }, Response.ErrorListener { onNetworkError(it) })
         queue.add(req)
     }
 
+    /**
+     * Called when the /check-payment response gave a result.
+     */
     private fun onCheckPayment(checkPaymentResponse: JSONObject) {
+        if (paused) {
+            return
+        }
         if (checkPaymentResponse.getBoolean("paid")) {
             val mySnackbar = Snackbar.make(view!!, "Already paid?!", Snackbar.LENGTH_SHORT)
             mySnackbar.show()
             return
         }
-        model.activeContractUri = checkPaymentResponse.getString("contract_url")
+        model.activeTalerPayUri = checkPaymentResponse.getString("taler_pay_uri")
         findNavController().navigate(R.id.action_createPayment_to_processPayment)
     }
 
