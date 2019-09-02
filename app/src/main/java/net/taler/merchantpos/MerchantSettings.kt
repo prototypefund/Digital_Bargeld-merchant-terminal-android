@@ -117,7 +117,7 @@ class MerchantSettings : Fragment() {
         prefs.edit().putString("merchantBackendUrl", config.baseUrl)
             .putString("merchantBackendInstance", config.instance)
             .putString("merchantBackendApiKey", config.apiKey)
-            .putString("merchantBackendCurrency", config.currency)
+            .putString("merchantBackendCurrency", config.currency).apply()
     }
 
     private fun onNetworkError(it: VolleyError) {
