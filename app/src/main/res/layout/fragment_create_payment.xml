@@ -36,7 +36,7 @@
                 android:text="Amount (TESTKUDOS)"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView6"/>
+                android:id="@+id/text_create_payment_amount_label"/>
         <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

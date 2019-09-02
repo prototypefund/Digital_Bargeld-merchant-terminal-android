@@ -64,6 +64,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
 
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+
     // JSON literals and parsing
     implementation 'com.beust:klaxon:5.0.11'
 }

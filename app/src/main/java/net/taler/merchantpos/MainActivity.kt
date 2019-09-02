@@ -1,5 +1,6 @@
 package net.taler.merchantpos
 
+import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
@@ -276,9 +277,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         findViewById<Toolbar>(R.id.toolbar)
             .setupWithNavController(navController, appBarConfiguration)
 
+        val prefs = getSharedPreferences("taler-merchant-terminal", Context.MODE_PRIVATE)
+
+        val baseUrl = prefs.getString("merchantBackendUrl", "https://backend.test.taler.net")
+        val instance = prefs.getString("merchantBackendInstance", "default")
+        val apiKey = prefs.getString("merchantBackendApiKey", "sandbox")
+        val currency = prefs.getString("merchantBackendCurrency", "TESTKUDOS")
+
         model = ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
         model.merchantConfig =
-            MerchantConfig("https://backend.test.taler.net", "default", "sandbox")
+            MerchantConfig(baseUrl!!, instance!!, apiKey!!, currency!!)
 
     }
 

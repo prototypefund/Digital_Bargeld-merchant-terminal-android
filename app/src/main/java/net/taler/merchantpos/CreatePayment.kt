@@ -1,11 +1,13 @@
 package net.taler.merchantpos
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
@@ -36,6 +38,10 @@ class CreatePayment : Fragment() {
     override fun onResume() {
         super.onResume()
         this.paused = false
+
+        val textView = view!!.findViewById<TextView>(R.id.text_create_payment_amount_label)
+        @SuppressLint("SetTextI18n")
+        textView.text = "Amount (${model.merchantConfig!!.currency})"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +56,7 @@ class CreatePayment : Fragment() {
 
     private fun onRequestPayment() {
         val amountValStr = activity!!.findViewById<EditText>(R.id.edit_payment_amount).text
-        val amount = "TESTKUDOS:${amountValStr}"
+        val amount = "${model.merchantConfig!!.currency}:${amountValStr}"
         model.activeAmount = amount
         model.activeSubject = activity!!.findViewById<EditText>(R.id.edit_payment_subject).text
 
@@ -117,6 +123,7 @@ class CreatePayment : Fragment() {
         requestPaymentButton.setOnClickListener {
             onRequestPayment()
         }
+
         return view
     }
 
