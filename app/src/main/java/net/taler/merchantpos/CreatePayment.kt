@@ -9,7 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -25,7 +25,7 @@ import org.json.JSONObject
  */
 class CreatePayment : Fragment() {
     private lateinit var queue: RequestQueue
-    private lateinit var model: PosTerminalViewModel
+    private val model: PosTerminalViewModel by activityViewModels()
 
     private var paused: Boolean = false
 
@@ -46,10 +46,6 @@ class CreatePayment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        model = activity?.run {
-            ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
-        } ?: throw Exception("Invalid Activity")
 
         queue = Volley.newRequestQueue(context)
     }
@@ -92,8 +88,13 @@ class CreatePayment : Fragment() {
         val params = mapOf("order_id" to orderId, "instance" to merchantConfig.instance)
         model.activeOrderId = orderId
 
-        val req = MerchantInternalRequest(Request.Method.GET, model.merchantConfig!!, "check-payment", params, null,
-            Response.Listener { onCheckPayment(it) }, Response.ErrorListener { onNetworkError(it) })
+        val req = MerchantInternalRequest(Request.Method.GET,
+            model.merchantConfig!!,
+            "check-payment",
+            params,
+            null,
+            Response.Listener { onCheckPayment(it) },
+            Response.ErrorListener { onNetworkError(it) })
         queue.add(req)
     }
 
@@ -119,7 +120,7 @@ class CreatePayment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_create_payment, container, false)
-        val requestPaymentButton = view.findViewById<Button>(R.id.button_request_payment);
+        val requestPaymentButton = view.findViewById<Button>(R.id.button_request_payment)
         requestPaymentButton.setOnClickListener {
             onRequestPayment()
         }

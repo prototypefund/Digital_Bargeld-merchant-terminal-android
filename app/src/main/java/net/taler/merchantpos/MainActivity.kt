@@ -6,18 +6,18 @@ import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.Bundle
 import android.util.Log
-import androidx.core.view.GravityCompat
+import android.view.Menu
 import android.view.MenuItem
-import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import android.view.Menu
-import androidx.lifecycle.ViewModelProviders
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.navigation.NavigationView
 import net.taler.merchantpos.Utils.Companion.hexStringToByteArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         const val TAG = "taler-merchant"
     }
 
-    private lateinit var model: PosTerminalViewModel
+    private val model: PosTerminalViewModel by viewModels()
     private var nfcAdapter: NfcAdapter? = null
 
     private var currentTag: IsoDep? = null
@@ -265,9 +265,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navView.setNavigationItemSelectedListener(this)
 
         val navController = findNavController(R.id.nav_host_fragment)
-        val appBarConfiguration =
-            AppBarConfiguration(
+        val appBarConfiguration = AppBarConfiguration(
                 setOf(
+                    R.id.order,
                     R.id.createPayment,
                     R.id.merchantSettings,
                     R.id.merchantHistory
@@ -284,10 +284,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val apiKey = prefs.getString("merchantBackendApiKey", "sandbox")
         val currency = prefs.getString("merchantBackendCurrency", "TESTKUDOS")
 
-        model = ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
         model.merchantConfig =
             MerchantConfig(baseUrl!!, instance!!, apiKey!!, currency!!)
-
     }
 
     override fun onBackPressed() {
@@ -319,9 +317,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle navigation view item clicks here.
         val nav: NavController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
-            R.id.nav_home -> {
-                nav.navigate(R.id.action_global_createPayment)
-            }
+            R.id.nav_home -> nav.navigate(R.id.action_global_createPayment)
+            R.id.nav_order -> nav.navigate(R.id.action_global_order)
             R.id.nav_history -> {
                 nav.navigate(R.id.action_global_merchantHistory)
             }

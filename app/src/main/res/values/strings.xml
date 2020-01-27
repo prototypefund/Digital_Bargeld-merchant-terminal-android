@@ -16,4 +16,10 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="order_total">Total: %1$.2f</string>
+    <string name="order_restart">Restart</string>
+    <string name="button_reconfigure">Reconfigure</string>
+    <string name="button_history">History</string>
+    <string name="button_complete">Complete</string>
 </resources>

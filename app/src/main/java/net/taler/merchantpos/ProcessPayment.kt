@@ -1,28 +1,17 @@
 package net.taler.merchantpos
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.common.BitMatrix
-import com.google.zxing.qrcode.QRCodeWriter
-import android.opengl.ETC1.getWidth
-import android.opengl.ETC1.getHeight
-import android.os.Handler
-import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
-import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.findNavController
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -30,8 +19,10 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.Volley
 import com.google.android.material.snackbar.Snackbar
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.QRCodeWriter
 import org.json.JSONObject
-import java.net.URLEncoder
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -47,17 +38,12 @@ class ProcessPayment : Fragment() {
 
     private var paused: Boolean = true
     private lateinit var queue: RequestQueue
-    private lateinit var model: PosTerminalViewModel
+    private val model: PosTerminalViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        model = activity?.run {
-            ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
-        } ?: throw Exception("Invalid Activity")
-
         queue = Volley.newRequestQueue(context)
-
     }
 
     private fun onCheckPayment(checkPaymentResponse: JSONObject) {

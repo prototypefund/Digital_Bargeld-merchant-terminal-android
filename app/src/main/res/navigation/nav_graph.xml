@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/nav_graph"
-            app:startDestination="@id/createPayment">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/nav_graph"
+        app:startDestination="@id/order">
+
+    <fragment
+            android:id="@+id/order"
+            android:name="net.taler.merchantpos.order.OrderFragment"
+            android:label="Order"
+            tools:layout="@layout/fragment_order">
+        <action
+                android:id="@+id/action_createPayment_to_processPayment"
+                app:destination="@id/processPayment" />
+    </fragment>
 
     <fragment android:id="@+id/createPayment" android:name="net.taler.merchantpos.CreatePayment"
               android:label="Request Payment" tools:layout="@layout/fragment_create_payment">
@@ -19,6 +30,7 @@
               android:label="Payment History" tools:layout="@layout/fragment_merchant_history"/>
     <action android:id="@+id/action_global_merchantHistory" app:destination="@id/merchantHistory"/>
     <action android:id="@+id/action_global_createPayment" app:destination="@id/createPayment"/>
+    <action android:id="@+id/action_global_order" app:destination="@id/order"/>
     <fragment android:id="@+id/merchantSettings" android:name="net.taler.merchantpos.MerchantSettings"
               android:label="Merchant Settings" tools:layout="@layout/fragment_merchant_settings"/>
     <action android:id="@+id/action_global_merchantSettings" app:destination="@id/merchantSettings"/>

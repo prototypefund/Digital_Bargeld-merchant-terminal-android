@@ -4,13 +4,13 @@ package net.taler.merchantpos
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -87,17 +87,13 @@ fun parseTalerTimestamp(s: String): Instant {
  */
 class MerchantHistory : Fragment() {
     private lateinit var queue: RequestQueue
-    private lateinit var model: PosTerminalViewModel
+    private val model: PosTerminalViewModel by activityViewModels()
     private val historyListAdapter = MyAdapter(listOf())
 
     private val isLoading = MutableLiveData<Boolean>().apply { value = false }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        model = activity?.run {
-            ViewModelProviders.of(this)[PosTerminalViewModel::class.java]
-        } ?: throw Exception("Invalid Activity")
 
         queue = Volley.newRequestQueue(context)
     }
@@ -166,7 +162,7 @@ class MerchantHistory : Fragment() {
         }
 
         this.isLoading.observe(this, androidx.lifecycle.Observer { loading ->
-            Log.v(TAG, "setting refreshing to ${loading}")
+            Log.v(TAG, "setting refreshing to $loading")
             refreshLayout.isRefreshing = loading
         })
 
@@ -174,6 +170,6 @@ class MerchantHistory : Fragment() {
     }
 
     companion object {
-        val TAG = "taler-merchant"
+        const val TAG = "taler-merchant"
     }
 }
