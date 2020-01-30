@@ -106,15 +106,16 @@ class MerchantHistory : Fragment() {
 
     private fun onHistoryResponse(body: JSONObject) {
         this.isLoading.value = false
-        Log.v(TAG, "got history response ${body}")
+        Log.v(TAG, "got history response $body")
+        // TODO use jackson instead of manual parsing
         val data = arrayListOf<HistoryItem>()
         val historyJson = body.getJSONArray("history")
         for (i in 0 until historyJson.length()) {
             val item = historyJson.getJSONObject(i)
             val orderId = item.getString("order_id")
             val summary = item.getString("summary")
-            val timestampStr = item.getString("timestamp")
-            val timestamp = parseTalerTimestamp(timestampStr)
+            val timestampObj = item.getJSONObject("timestamp")
+            val timestamp = Instant.ofEpochSecond(timestampObj.getLong("t_ms"))
             val amount = Amount.fromString(item.getString("amount"))
             data.add(HistoryItem(orderId, amount, summary, timestamp))
         }
@@ -161,7 +162,7 @@ class MerchantHistory : Fragment() {
             fetchHistory()
         }
 
-        this.isLoading.observe(this, androidx.lifecycle.Observer { loading ->
+        this.isLoading.observe(viewLifecycleOwner, androidx.lifecycle.Observer { loading ->
             Log.v(TAG, "setting refreshing to $loading")
             refreshLayout.isRefreshing = loading
         })
