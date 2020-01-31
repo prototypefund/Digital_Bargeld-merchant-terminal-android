@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
+import net.taler.merchantpos.config.MerchantRequest
 import org.json.JSONObject
 
 
@@ -38,7 +39,7 @@ class ProcessPayment : Fragment() {
 
     private var paused: Boolean = true
     private lateinit var queue: RequestQueue
-    private val model: PosTerminalViewModel by activityViewModels()
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,8 +70,14 @@ class ProcessPayment : Fragment() {
         }
         //Log.v("taler-merchant", "checkig if payment happened")
         val params = mapOf("order_id" to model.activeOrderId!!, "instance" to model.merchantConfig!!.instance)
-        var req = MerchantInternalRequest(Request.Method.GET, model.merchantConfig!!, "check-payment", params, null,
-            Response.Listener { onCheckPayment(it) }, Response.ErrorListener { onNetworkError(it) })
+        var req =
+            MerchantRequest(Request.Method.GET,
+                model.merchantConfig!!,
+                "check-payment",
+                params,
+                null,
+                Response.Listener { onCheckPayment(it) },
+                Response.ErrorListener { onNetworkError(it) })
         queue.add(req)
         val handler = Handler()
         handler.postDelayed({

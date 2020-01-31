@@ -1,6 +1,5 @@
 package net.taler.merchantpos
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +16,7 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.Volley
 import com.google.android.material.snackbar.Snackbar
+import net.taler.merchantpos.config.MerchantRequest
 import org.json.JSONObject
 
 
@@ -25,7 +25,7 @@ import org.json.JSONObject
  */
 class CreatePayment : Fragment() {
     private lateinit var queue: RequestQueue
-    private val model: PosTerminalViewModel by activityViewModels()
+    private val model: MainViewModel by activityViewModels()
 
     private var paused: Boolean = false
 
@@ -40,7 +40,6 @@ class CreatePayment : Fragment() {
         this.paused = false
 
         val textView = view!!.findViewById<TextView>(R.id.text_create_payment_amount_label)
-        @SuppressLint("SetTextI18n")
         textView.text = "Amount (${model.merchantConfig!!.currency})"
     }
 
@@ -65,7 +64,7 @@ class CreatePayment : Fragment() {
 
         val reqBody = JSONObject().also { it.put("order", order) }
 
-        val req = MerchantInternalRequest(
+        val req = MerchantRequest(
             Request.Method.POST,
             model.merchantConfig!!,
             "order",
@@ -88,13 +87,14 @@ class CreatePayment : Fragment() {
         val params = mapOf("order_id" to orderId, "instance" to merchantConfig.instance)
         model.activeOrderId = orderId
 
-        val req = MerchantInternalRequest(Request.Method.GET,
-            model.merchantConfig!!,
-            "check-payment",
-            params,
-            null,
-            Response.Listener { onCheckPayment(it) },
-            Response.ErrorListener { onNetworkError(it) })
+        val req =
+            MerchantRequest(Request.Method.GET,
+                model.merchantConfig!!,
+                "check-payment",
+                params,
+                null,
+                Response.Listener { onCheckPayment(it) },
+                Response.ErrorListener { onNetworkError(it) })
         queue.add(req)
     }
 

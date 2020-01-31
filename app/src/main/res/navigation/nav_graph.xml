@@ -31,7 +31,7 @@
     <action android:id="@+id/action_global_merchantHistory" app:destination="@id/merchantHistory"/>
     <action android:id="@+id/action_global_createPayment" app:destination="@id/createPayment"/>
     <action android:id="@+id/action_global_order" app:destination="@id/order"/>
-    <fragment android:id="@+id/merchantSettings" android:name="net.taler.merchantpos.MerchantSettings"
+    <fragment android:id="@+id/merchantSettings" android:name="net.taler.merchantpos.config.MerchantConfigFragment"
               android:label="Merchant Settings" tools:layout="@layout/fragment_merchant_settings"/>
     <action android:id="@+id/action_global_merchantSettings" app:destination="@id/merchantSettings"/>
     <fragment

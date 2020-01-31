@@ -21,6 +21,7 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.Volley
 import com.google.android.material.snackbar.Snackbar
+import net.taler.merchantpos.config.MerchantRequest
 import org.json.JSONObject
 import java.time.Instant
 import java.time.ZoneId
@@ -87,7 +88,7 @@ fun parseTalerTimestamp(s: String): Instant {
  */
 class MerchantHistory : Fragment() {
     private lateinit var queue: RequestQueue
-    private val model: PosTerminalViewModel by activityViewModels()
+    private val model: MainViewModel by activityViewModels()
     private val historyListAdapter = MyAdapter(listOf())
 
     private val isLoading = MutableLiveData<Boolean>().apply { value = false }
@@ -125,7 +126,7 @@ class MerchantHistory : Fragment() {
     private fun fetchHistory() {
         isLoading.value = true
         val instance = model.merchantConfig!!.instance
-        val req = MerchantInternalRequest(
+        val req = MerchantRequest(
             Request.Method.GET,
             model.merchantConfig!!,
             "history",

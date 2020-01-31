@@ -1,37 +1,20 @@
 package net.taler.merchantpos.order
 
-import android.app.Application
 import android.util.Log
 import androidx.annotation.UiThread
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.map
-import androidx.lifecycle.viewModelScope
-import com.android.volley.Request.Method.GET
-import com.android.volley.Response.ErrorListener
-import com.android.volley.Response.Listener
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import net.taler.merchantpos.config.ConfigurationReceiver
 import org.json.JSONObject
 
-class OrderViewModel(app: Application) : AndroidViewModel(app) {
+class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
     companion object {
-        val TAG = OrderViewModel::class.java.simpleName
+        val TAG = OrderManager::class.java.simpleName
     }
-
-    private val url = "https://grobox.de/taler/products.json"
-    private val queue = Volley.newRequestQueue(app)
-    private val mapper = ObjectMapper()
-        .registerModule(KotlinModule())
-        .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     private val productsByCategory = HashMap<Category, ArrayList<Product>>()
 
@@ -45,23 +28,17 @@ class OrderViewModel(app: Application) : AndroidViewModel(app) {
     private val mCategories = MutableLiveData<List<Category>>()
     internal val categories: LiveData<List<Category>> = mCategories
 
-    init {
-        val stringRequest = JsonObjectRequest(GET, url, null,
-            Listener { response -> onConfigurationReceived(response) },
-            ErrorListener { onConfigurationError() }
-        )
-        queue.add(stringRequest)
-    }
-
-    override fun onCleared() {
-        queue.cancelAll { !it.isCanceled }
-    }
-
-    private fun onConfigurationReceived(json: JSONObject) = viewModelScope.launch(Dispatchers.IO) {
+    override suspend fun onConfigurationReceived(json: JSONObject): Boolean {
         // parse categories
         val categoriesStr = json.getJSONArray("categories").toString()
         val categoriesType = object : TypeReference<List<Category>>() {}
         val categories: List<Category> = mapper.readValue(categoriesStr, categoriesType)
+        if (categories.isEmpty()) {
+            Log.e(TAG, "No valid category found.")
+            return false
+        }
+        // pre-select the first category
+        categories[0].selected = true
         mCategories.postValue(categories)
 
         // parse products (live data gets updated in setCurrentCategory())
@@ -77,7 +54,7 @@ class OrderViewModel(app: Application) : AndroidViewModel(app) {
                 if (category == null) {
                     Log.e(TAG, "Product $product has unknown category $categoryId")
                     onConfigurationError()
-                    return@launch
+                    return false
                 }
                 if (productsByCategory.containsKey(category)) {
                     productsByCategory[category]?.add(product)
@@ -86,9 +63,12 @@ class OrderViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
         }
-        // pre-select the first category
-        if (productsByCategory.size > 0) setCurrentCategory(categories[0])
-        else onConfigurationError()
+        return if (productsByCategory.size > 0) {
+            mProducts.postValue(productsByCategory[categories[0]])
+            true
+        } else {
+            false
+        }
     }
 
     private fun onConfigurationError() {

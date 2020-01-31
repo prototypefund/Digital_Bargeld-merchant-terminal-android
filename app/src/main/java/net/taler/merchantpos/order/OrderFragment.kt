@@ -9,12 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_order.*
+import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 
 class OrderFragment : Fragment() {
 
-    private val viewModel: OrderViewModel by activityViewModels()
-
+    private val viewModel: MainViewModel by activityViewModels()
+    private val orderManager by lazy { viewModel.orderManager }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,13 +26,16 @@ class OrderFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        restartButton.setOnClickListener { viewModel.restart() }
+        // TODO build undo-feature that allows to undo a restart and bring back old order
+        restartButton.setOnClickListener { orderManager.restart() }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val nav: NavController = findNavController(requireActivity(), R.id.nav_host_fragment)
+        reconfigureButton.setOnClickListener { nav.navigate(R.id.action_global_merchantSettings) }
         historyButton.setOnClickListener { nav.navigate(R.id.action_global_merchantHistory) }
+        logoutButton.setOnClickListener { nav.navigate(R.id.action_global_merchantSettings) }
     }
 
 }

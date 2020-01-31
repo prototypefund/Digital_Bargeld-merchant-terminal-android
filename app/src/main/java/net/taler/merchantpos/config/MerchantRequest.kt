@@ -1,4 +1,4 @@
-package net.taler.merchantpos
+package net.taler.merchantpos.config
 
 
 import android.util.ArrayMap
@@ -6,7 +6,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import org.json.JSONObject
 
-class MerchantInternalRequest(
+class MerchantRequest(
     method: Int,
     private val merchantConfig: MerchantConfig,
     endpoint: String,

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kotlinx.android.synthetic.main.fragment_products.*
+import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.order.ProductAdapter.ProductViewHolder
 
@@ -22,7 +23,8 @@ interface ProductSelectionListener {
 
 class ProductsFragment : Fragment(), ProductSelectionListener {
 
-    private val viewModel: OrderViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
+    private val orderManager by lazy { viewModel.orderManager }
     private val adapter = ProductAdapter(this)
 
     override fun onCreateView(
@@ -39,7 +41,7 @@ class ProductsFragment : Fragment(), ProductSelectionListener {
             layoutManager = GridLayoutManager(requireContext(), 3)
         }
 
-        viewModel.products.observe(viewLifecycleOwner, Observer { products ->
+        orderManager.products.observe(viewLifecycleOwner, Observer { products ->
             if (products == null) {
                 adapter.setItems(emptyList())
             } else {
@@ -50,7 +52,7 @@ class ProductsFragment : Fragment(), ProductSelectionListener {
     }
 
     override fun onProductSelected(product: Product) {
-        viewModel.addProduct(product)
+        orderManager.addProduct(product)
     }
 
 }

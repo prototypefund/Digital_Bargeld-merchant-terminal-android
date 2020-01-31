@@ -21,5 +21,16 @@
     <string name="order_restart">Restart</string>
     <string name="button_reconfigure">Reconfigure</string>
     <string name="button_history">History</string>
+    <string name="button_logout">Logout</string>
     <string name="button_complete">Complete</string>
+
+    <string name="config_url">Configuration URL</string>
+    <string name="config_username">Username</string>
+    <string name="config_password">Password</string>
+    <string name="config_currency">Currency: %s</string>
+    <string name="config_ok">Fetch Configuration</string>
+    <string name="config_malformed_url">Invalid URL</string>
+    <string name="config_auth_error">Invalid username or password</string>
+    <string name="config_error">Error: Invalid Configuration</string>
+
 </resources>

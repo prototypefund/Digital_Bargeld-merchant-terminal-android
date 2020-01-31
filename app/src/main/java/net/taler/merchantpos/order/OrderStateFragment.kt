@@ -11,12 +11,14 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_order_state.*
+import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.order.OrderAdapter.OrderViewHolder
 
 class OrderStateFragment : Fragment() {
 
-    private val viewModel: OrderViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
+    private val orderManager by lazy { viewModel.orderManager }
     private val adapter = OrderAdapter()
 
     override fun onCreateView(
@@ -33,10 +35,10 @@ class OrderStateFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
         }
 
-        viewModel.order.observe(viewLifecycleOwner, Observer { order ->
+        orderManager.order.observe(viewLifecycleOwner, Observer { order ->
             adapter.setItems(order)
         })
-        viewModel.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
+        orderManager.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
             if (orderTotal == 0.0) {
                 totalView.text = null
             } else {

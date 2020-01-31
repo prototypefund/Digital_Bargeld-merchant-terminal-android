@@ -1,6 +1,5 @@
 package net.taler.merchantpos
 
-import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
@@ -143,7 +142,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         const val TAG = "taler-merchant"
     }
 
-    private val model: PosTerminalViewModel by viewModels()
+    private val model: MainViewModel by viewModels()
     private var nfcAdapter: NfcAdapter? = null
 
     private var currentTag: IsoDep? = null
@@ -273,19 +272,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     R.id.merchantHistory
                 ), drawerLayout
             )
-
-        findViewById<Toolbar>(R.id.toolbar)
-            .setupWithNavController(navController, appBarConfiguration)
-
-        val prefs = getSharedPreferences("taler-merchant-terminal", Context.MODE_PRIVATE)
-
-        val baseUrl = prefs.getString("merchantBackendUrl", "https://backend.test.taler.net")
-        val instance = prefs.getString("merchantBackendInstance", "default")
-        val apiKey = prefs.getString("merchantBackendApiKey", "sandbox")
-        val currency = prefs.getString("merchantBackendCurrency", "TESTKUDOS")
-
-        model.merchantConfig =
-            MerchantConfig(baseUrl!!, instance!!, apiKey!!, currency!!)
+        toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
     override fun onBackPressed() {

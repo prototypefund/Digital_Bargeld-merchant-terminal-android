@@ -5,4 +5,5 @@
     <color name="colorAccent">#FFEB3B</color>
 
     <color name="bottomButtons">#9E9D24</color>
+    <color name="logoutButton">#C62828</color>
 </resources>

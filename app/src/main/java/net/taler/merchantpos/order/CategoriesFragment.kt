@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import kotlinx.android.synthetic.main.fragment_categories.*
+import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.order.CategoryAdapter.CategoryViewHolder
 
@@ -22,7 +23,8 @@ interface CategorySelectionListener {
 
 class CategoriesFragment : Fragment(), CategorySelectionListener {
 
-    private val viewModel: OrderViewModel by activityViewModels()
+    private val viewModel: MainViewModel by activityViewModels()
+    private val orderManager by lazy { viewModel.orderManager }
     private val adapter = CategoryAdapter(this)
 
     override fun onCreateView(
@@ -39,14 +41,14 @@ class CategoriesFragment : Fragment(), CategorySelectionListener {
             layoutManager = LinearLayoutManager(requireContext())
         }
 
-        viewModel.categories.observe(viewLifecycleOwner, Observer { categories ->
+        orderManager.categories.observe(viewLifecycleOwner, Observer { categories ->
             adapter.setItems(categories)
             progressBar.visibility = INVISIBLE
         })
     }
 
     override fun onCategorySelected(category: Category) {
-        viewModel.setCurrentCategory(category)
+        orderManager.setCurrentCategory(category)
     }
 
 }
