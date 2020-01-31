@@ -8,7 +8,10 @@ import androidx.lifecycle.Transformations.map
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.taler.merchantpos.config.ConfigurationReceiver
+import net.taler.merchantpos.order.RestartState.*
 import org.json.JSONObject
+
+enum class RestartState { ENABLED, DISABLED, UNDO }
 
 class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
@@ -27,6 +30,10 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
     private val mCategories = MutableLiveData<List<Category>>()
     internal val categories: LiveData<List<Category>> = mCategories
+
+    private var undoOrder: HashMap<Product, Int>? = null
+    private val mRestartState = MutableLiveData<RestartState>().apply { value = DISABLED }
+    internal val restartState: LiveData<RestartState> = mRestartState
 
     override suspend fun onConfigurationReceived(json: JSONObject): Boolean {
         // parse categories
@@ -91,11 +98,20 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         val quantity = map[product] ?: 0
         map[product] = quantity + 1
         mOrder.value = map
+        mRestartState.value = ENABLED
     }
 
     @UiThread
-    internal fun restart() {
-        mOrder.value = HashMap()
+    internal fun restartOrUndo() {
+        if (restartState.value == UNDO) {
+            mOrder.value = undoOrder
+            mRestartState.value = ENABLED
+            undoOrder = null
+        } else {
+            undoOrder = mOrder.value
+            mOrder.value = HashMap()
+            mRestartState.value = UNDO
+        }
     }
 
     private fun getTotal(map: HashMap<Product, Int>): Double {
