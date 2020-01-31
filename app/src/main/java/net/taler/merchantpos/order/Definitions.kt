@@ -22,4 +22,6 @@ data class Product(
     val priceAsDouble by lazy { Amount.fromString(price).amount.toDouble() }
 }
 
+typealias Order = HashMap<Product, Int>
+
 typealias OrderLine = Pair<Product, Int>

@@ -19,6 +19,7 @@ class OrderFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
     private val orderManager by lazy { viewModel.orderManager }
+    private val paymentManager by lazy { viewModel.paymentManager }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,6 +48,11 @@ class OrderFragment : Fragment() {
         reconfigureButton.setOnClickListener { nav.navigate(R.id.action_global_merchantSettings) }
         historyButton.setOnClickListener { nav.navigate(R.id.action_global_merchantHistory) }
         logoutButton.setOnClickListener { nav.navigate(R.id.action_global_merchantSettings) }
+        completeButton.setOnClickListener {
+            val order = orderManager.order.value ?: return@setOnClickListener
+            paymentManager.createPayment(order)
+            nav.navigate(R.id.action_createPayment_to_processPayment)
+        }
     }
 
 }

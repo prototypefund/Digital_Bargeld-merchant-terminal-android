@@ -5,7 +5,6 @@ import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -158,7 +157,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         isoDep.transceive(apduSelectFile())
 
-        val contractUri: String? = model.activeTalerPayUri
+        val contractUri: String? = model.paymentManager.payment.value?.talerPayUri
 
         if (contractUri != null) {
             isoDep.transceive(apduPutTalerData(1, contractUri.toByteArray()))
@@ -267,7 +266,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val appBarConfiguration = AppBarConfiguration(
                 setOf(
                     R.id.order,
-                    R.id.createPayment,
                     R.id.merchantSettings,
                     R.id.merchantHistory
                 ), drawerLayout
@@ -284,39 +282,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         val nav: NavController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
-            R.id.nav_home -> nav.navigate(R.id.action_global_createPayment)
             R.id.nav_order -> nav.navigate(R.id.action_global_order)
-            R.id.nav_history -> {
-                nav.navigate(R.id.action_global_merchantHistory)
-            }
-            R.id.nav_settings -> {
-                nav.navigate(R.id.action_global_merchantSettings)
-            }
+            R.id.nav_history -> nav.navigate(R.id.action_global_merchantHistory)
+            R.id.nav_settings -> nav.navigate(R.id.action_global_merchantSettings)
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
-
 
 }

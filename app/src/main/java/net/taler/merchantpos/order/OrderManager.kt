@@ -21,9 +21,9 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
     private val productsByCategory = HashMap<Category, ArrayList<Product>>()
 
-    private val mOrder = MutableLiveData<HashMap<Product, Int>>()
-    internal val order: LiveData<HashMap<Product, Int>> = mOrder
-    internal val orderTotal: LiveData<Double> = map(mOrder) { map -> getTotal(map) }
+    private val mOrder = MutableLiveData<Order>()
+    internal val order: LiveData<Order> = mOrder
+    internal val orderTotal: LiveData<Double> = map(mOrder) { it.getTotal() }
 
     private val mProducts = MutableLiveData<List<Product>>()
     internal val products: LiveData<List<Product>> = mProducts
@@ -31,7 +31,7 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private val mCategories = MutableLiveData<List<Category>>()
     internal val categories: LiveData<List<Category>> = mCategories
 
-    private var undoOrder: HashMap<Product, Int>? = null
+    private var undoOrder: Order? = null
     private val mRestartState = MutableLiveData<RestartState>().apply { value = DISABLED }
     internal val restartState: LiveData<RestartState> = mRestartState
 
@@ -114,13 +114,17 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         }
     }
 
-    private fun getTotal(map: HashMap<Product, Int>): Double {
-        var total = 0.0
-        map.forEach {
-            val price = it.key.priceAsDouble
-            total += price * it.value
-        }
-        return total
-    }
+}
 
+fun Order.getTotal(): Double {
+    var total = 0.0
+    forEach {
+        val price = it.key.priceAsDouble
+        total += price * it.value
+    }
+    return total
+}
+
+fun Order.getTotalAsString(): String {
+    return String.format("%.2f", getTotal())
 }

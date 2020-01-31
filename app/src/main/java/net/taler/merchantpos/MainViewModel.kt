@@ -1,7 +1,6 @@
 package net.taler.merchantpos
 
 import android.app.Application
-import android.text.Editable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.volley.toolbox.Volley
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.order.OrderManager
+import net.taler.merchantpos.payment.PaymentManager
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -22,14 +22,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val configManager = ConfigManager(app, viewModelScope, mapper, queue).apply {
         addConfigurationReceiver(orderManager)
     }
+    val paymentManager = PaymentManager(configManager, queue)
 
+    @Deprecated("Use ConfigManager instead!", ReplaceWith("configManager.merchantConfig"))
     val merchantConfig
         get() = configManager.merchantConfig
-
-    var activeSubject: Editable? = null
-    var activeOrderId: String? = null
-    var activeAmount: String? = null
-    var activeTalerPayUri: String? = null
 
     init {
         if (configManager.merchantConfig == null) {
@@ -39,12 +36,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     override fun onCleared() {
         queue.cancelAll { !it.isCanceled }
-    }
-
-    fun activeAmountPretty(): String? {
-        val amount = activeAmount ?: return null
-        val components = amount.split(":")
-        return "${components[1]} ${components[0]}"
     }
 
 }

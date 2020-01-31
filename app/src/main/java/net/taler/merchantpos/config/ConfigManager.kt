@@ -113,7 +113,6 @@ class ConfigManager(
                 config = it
                 saveConfig(it)
             }
-            Log.e("TEST", "set currency to $currency")
             merchantConfig = merchantConfig!!.copy(currency = currency)
             mConfigUpdateResult.value = ConfigUpdateResult(currency)
         } else {
