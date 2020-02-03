@@ -7,7 +7,9 @@ data class Config(
     val configUrl: String,
     val username: String,
     val password: String
-)
+) {
+    fun isValid() = !configUrl.isBlank()
+}
 
 data class MerchantConfig(
     @JsonProperty("base_url")

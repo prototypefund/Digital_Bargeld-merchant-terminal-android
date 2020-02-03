@@ -32,7 +32,7 @@ class PaymentManager(
 ) {
 
     private val mPayment = MutableLiveData<Payment>()
-    var payment: LiveData<Payment> = mPayment
+    val payment: LiveData<Payment> = mPayment
 
     private val checkTimer = object : CountDownTimer(TIMEOUT, CHECK_INTERVAL) {
         override fun onTick(millisUntilFinished: Long) {
@@ -111,12 +111,13 @@ class PaymentManager(
      * Called when the /check-payment response gave a result.
      */
     private fun onPaymentChecked(checkPaymentResponse: JSONObject) {
+        val currentValue = requireNotNull(mPayment.value)
         if (checkPaymentResponse.getBoolean("paid")) {
-            mPayment.value = mPayment.value!!.copy(paid = true)
+            mPayment.value = currentValue.copy(paid = true)
             checkTimer.cancel()
-        } else {
+        } else if (currentValue.talerPayUri == null) {
             val talerPayUri = checkPaymentResponse.getString("taler_pay_uri")
-            mPayment.value = mPayment.value!!.copy(talerPayUri = talerPayUri)
+            mPayment.value = currentValue.copy(talerPayUri = talerPayUri)
         }
     }
 

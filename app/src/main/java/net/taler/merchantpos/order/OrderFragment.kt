@@ -35,9 +35,11 @@ class OrderFragment : Fragment() {
             if (state == UNDO) {
                 restartButton.setText(R.string.order_undo)
                 restartButton.isEnabled = true
+                completeButton.isEnabled = false
             } else {
                 restartButton.setText(R.string.order_restart)
                 restartButton.isEnabled = state == ENABLED
+                completeButton.isEnabled = state == ENABLED
             }
         })
     }
@@ -45,13 +47,13 @@ class OrderFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val nav: NavController = findNavController(requireActivity(), R.id.nav_host_fragment)
-        reconfigureButton.setOnClickListener { nav.navigate(R.id.action_global_merchantSettings) }
-        historyButton.setOnClickListener { nav.navigate(R.id.action_global_merchantHistory) }
-        logoutButton.setOnClickListener { nav.navigate(R.id.action_global_merchantSettings) }
+        reconfigureButton.setOnClickListener { nav.navigate(R.id.action_order_to_merchantSettings) }
+        historyButton.setOnClickListener { nav.navigate(R.id.action_order_to_merchantHistory) }
+        logoutButton.setOnClickListener { nav.navigate(R.id.action_order_to_merchantSettings) }
         completeButton.setOnClickListener {
             val order = orderManager.order.value ?: return@setOnClickListener
             paymentManager.createPayment(order)
-            nav.navigate(R.id.action_createPayment_to_processPayment)
+            nav.navigate(R.id.action_order_to_processPayment)
         }
     }
 

@@ -33,5 +33,6 @@
     <string name="config_malformed_url">Invalid URL</string>
     <string name="config_auth_error">Invalid username or password</string>
     <string name="config_error">Error: Invalid Configuration</string>
+    <string name="config_fetching">Fetching Configuration…</string>
 
 </resources>

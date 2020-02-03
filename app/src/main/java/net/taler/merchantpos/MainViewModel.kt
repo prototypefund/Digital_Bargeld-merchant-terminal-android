@@ -29,7 +29,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         get() = configManager.merchantConfig
 
     init {
-        if (configManager.merchantConfig == null) {
+        if (configManager.merchantConfig == null && configManager.config.isValid()) {
             configManager.fetchConfig(configManager.config, false)
         }
     }

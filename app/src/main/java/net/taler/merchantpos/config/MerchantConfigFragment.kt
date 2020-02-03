@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import kotlinx.android.synthetic.main.fragment_merchant_settings.*
@@ -51,10 +52,6 @@ class MerchantConfigFragment : Fragment() {
                 configManager.configUpdateResult.removeObservers(viewLifecycleOwner)
             })
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
         updateView()
     }
 
@@ -85,6 +82,7 @@ class MerchantConfigFragment : Fragment() {
         onResultReceived()
         updateView()
         Snackbar.make(view!!, "Changed to new $currency merchant", LENGTH_SHORT).show()
+        findNavController().navigate(R.id.order)
     }
 
     private fun onNetworkError(authError: Boolean) {

@@ -50,6 +50,7 @@ class ProcessPaymentFragment : Fragment() {
         }
         if (payment.paid) {
             findNavController().navigate(R.id.action_processPayment_to_paymentSuccess)
+            model.orderManager.restartOrUndo()
             return
         }
         text_view_amount.text = "${payment.order.getTotalAsString()} ${payment.currency}"

@@ -10,7 +10,7 @@ import androidx.core.view.GravityCompat.START
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     private val nfcManager = NfcManager()
     private var nfcAdapter: NfcAdapter? = null
 
+    private lateinit var nav: NavController
     private lateinit var drawerLayout: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,10 +41,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
         drawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
-
         navView.setNavigationItemSelectedListener(this)
-
-        val navController = findNavController(R.id.nav_host_fragment)
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.order,
@@ -51,7 +49,20 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
                 R.id.merchantHistory
             ), drawerLayout
         )
-        toolbar.setupWithNavController(navController, appBarConfiguration)
+
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        nav = navHostFragment.navController
+        toolbar.setupWithNavController(nav, appBarConfiguration)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!model.configManager.config.isValid()) {
+            nav.navigate(R.id.action_global_merchantSettings)
+        } else if (model.configManager.merchantConfig == null) {
+            nav.navigate(R.id.action_global_configFetcher)
+        }
     }
 
     public override fun onResume() {
@@ -67,7 +78,6 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
-        val nav: NavController = findNavController(R.id.nav_host_fragment)
         when (item.itemId) {
             R.id.nav_order -> nav.navigate(R.id.action_global_order)
             R.id.nav_history -> nav.navigate(R.id.action_global_merchantHistory)
