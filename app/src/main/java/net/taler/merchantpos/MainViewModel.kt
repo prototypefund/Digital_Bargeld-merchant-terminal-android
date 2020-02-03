@@ -22,7 +22,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val configManager = ConfigManager(app, viewModelScope, mapper, queue).apply {
         addConfigurationReceiver(orderManager)
     }
-    val paymentManager = PaymentManager(configManager, queue)
+    val paymentManager = PaymentManager(configManager, queue, mapper)
 
     @Deprecated("Use ConfigManager instead!", ReplaceWith("configManager.merchantConfig"))
     val merchantConfig

@@ -11,10 +11,13 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response.ErrorListener
 import com.android.volley.Response.Listener
 import com.android.volley.VolleyError
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.config.MerchantRequest
 import net.taler.merchantpos.order.Order
 import net.taler.merchantpos.order.getTotalAsString
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
@@ -24,7 +27,8 @@ private val CHECK_INTERVAL = SECONDS.toMillis(1)
 
 class PaymentManager(
     private val configManager: ConfigManager,
-    private val queue: RequestQueue
+    private val queue: RequestQueue,
+    private val mapper: ObjectMapper
 ) {
 
     private val mPayment = MutableLiveData<Payment>()
@@ -62,6 +66,7 @@ class PaymentManager(
                 // fulfillment_url needs to be unique per order
                 put("fulfillment_url", "https://example.com/${order.hashCode()}")
                 put("instance", "default")
+                put("products", order.getProductsJson())
             })
         }
 
@@ -70,6 +75,17 @@ class PaymentManager(
             ErrorListener { onNetworkError(it) }
         )
         queue.add(req)
+    }
+
+    private fun Order.getProductsJson(): JSONArray {
+        val json = JSONArray()
+        forEach { product, quantity ->
+            val node = mapper.valueToTree<ObjectNode>(product).apply {
+                put("quantity", quantity)
+            }
+            json.put(JSONObject(mapper.writeValueAsString(node)))
+        }
+        return json
     }
 
     private fun onOrderCreated(orderResponse: JSONObject) {

@@ -128,8 +128,8 @@ class ConfigManager(
             .apply()
     }
 
-    private fun onNetworkError(it: VolleyError) {
-        val authError = it.networkResponse.statusCode == 401
+    private fun onNetworkError(it: VolleyError?) {
+        val authError = it?.networkResponse?.statusCode == 401
         mConfigUpdateResult.value = ConfigUpdateResult(null, authError)
     }
 
