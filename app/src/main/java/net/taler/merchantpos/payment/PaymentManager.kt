@@ -19,11 +19,13 @@ import net.taler.merchantpos.order.Order
 import net.taler.merchantpos.order.getTotalAsString
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
 
 private val TIMEOUT = MINUTES.toMillis(2)
 private val CHECK_INTERVAL = SECONDS.toMillis(1)
+private const val FULFILLMENT_PREFIX = "taler://fulfillment-success/"
 
 class PaymentManager(
     private val configManager: ConfigManager,
@@ -59,12 +61,15 @@ class PaymentManager(
 
         mPayment.value = Payment(order, summary, currency)
 
+        val fulfillmentId = "${System.currentTimeMillis()}-${order.hashCode()}"
+        val fulfillmentUrl =
+            "${FULFILLMENT_PREFIX}${URLEncoder.encode(summary, "UTF-8")}#$fulfillmentId"
         val body = JSONObject().apply {
             put("order", JSONObject().apply {
                 put("amount", amount)
                 put("summary", summary)
                 // fulfillment_url needs to be unique per order
-                put("fulfillment_url", "https://example.com/${order.hashCode()}")
+                put("fulfillment_url", fulfillmentUrl)
                 put("instance", "default")
                 put("products", order.getProductsJson())
             })
@@ -81,6 +86,7 @@ class PaymentManager(
         val json = JSONArray()
         forEach { product, quantity ->
             val node = mapper.valueToTree<ObjectNode>(product).apply {
+                remove("categories")
                 put("quantity", quantity)
             }
             json.put(JSONObject(mapper.writeValueAsString(node)))

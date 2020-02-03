@@ -60,7 +60,7 @@ class OrderFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (viewModel.configManager.needsConfig()) {
+        if (viewModel.configManager.needsConfig() || viewModel.configManager.merchantConfig?.currency == null) {
             findNavController().navigate(R.id.action_global_merchantSettings)
         }
     }

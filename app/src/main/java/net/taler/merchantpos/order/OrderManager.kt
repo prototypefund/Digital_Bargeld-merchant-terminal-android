@@ -7,8 +7,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations.map
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import net.taler.merchantpos.Amount.Companion.fromString
 import net.taler.merchantpos.config.ConfigurationReceiver
-import net.taler.merchantpos.order.RestartState.*
+import net.taler.merchantpos.order.RestartState.DISABLED
+import net.taler.merchantpos.order.RestartState.ENABLED
+import net.taler.merchantpos.order.RestartState.UNDO
 import org.json.JSONObject
 
 enum class RestartState { ENABLED, DISABLED, UNDO }
@@ -35,7 +38,8 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private val mRestartState = MutableLiveData<RestartState>().apply { value = DISABLED }
     internal val restartState: LiveData<RestartState> = mRestartState
 
-    override suspend fun onConfigurationReceived(json: JSONObject): Boolean {
+    @Suppress("BlockingMethodInNonBlockingContext") // run on Dispatchers.Main
+    override suspend fun onConfigurationReceived(json: JSONObject, currency: String): Boolean {
         // parse categories
         val categoriesStr = json.getJSONArray("categories").toString()
         val categoriesType = object : TypeReference<List<Category>>() {}
@@ -46,7 +50,6 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         }
         // pre-select the first category
         categories[0].selected = true
-        mCategories.postValue(categories)
 
         // parse products (live data gets updated in setCurrentCategory())
         val productsStr = json.getJSONArray("products").toString()
@@ -56,11 +59,15 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         // group products by categories
         productsByCategory.clear()
         products.forEach { product ->
+            val productCurrency = fromString(product.price).currency
+            if (productCurrency != currency) {
+                Log.e(TAG, "Product $product has currency $productCurrency, $currency expected")
+                return false
+            }
             product.categories.forEach { categoryId ->
                 val category = categories.find { it.id == categoryId }
                 if (category == null) {
                     Log.e(TAG, "Product $product has unknown category $categoryId")
-                    onConfigurationError()
                     return false
                 }
                 if (productsByCategory.containsKey(category)) {
@@ -71,16 +78,12 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
             }
         }
         return if (productsByCategory.size > 0) {
+            mCategories.postValue(categories)
             mProducts.postValue(productsByCategory[categories[0]])
             true
         } else {
             false
         }
-    }
-
-    private fun onConfigurationError() {
-        Log.e("TEST", "ERROR")
-        // TODO
     }
 
     internal fun setCurrentCategory(category: Category) {

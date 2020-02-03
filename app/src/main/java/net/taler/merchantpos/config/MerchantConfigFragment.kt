@@ -3,7 +3,9 @@ package net.taler.merchantpos.config
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.*
+import android.view.View.GONE
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -64,7 +66,10 @@ class MerchantConfigFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         // focus password if this is the only empty field
-        if (!configUrlView.editText!!.text.isBlank() && !usernameView.editText!!.text.isBlank()) {
+        if (passwordView.editText!!.text.isBlank()
+            && !configUrlView.editText!!.text.isBlank()
+            && !usernameView.editText!!.text.isBlank()
+        ) {
             passwordView.requestFocus()
         }
     }

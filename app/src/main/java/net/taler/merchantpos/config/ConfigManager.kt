@@ -33,7 +33,7 @@ interface ConfigurationReceiver {
     /**
      * Returns true if the configuration was valid, false otherwise.
      */
-    suspend fun onConfigurationReceived(json: JSONObject): Boolean
+    suspend fun onConfigurationReceived(json: JSONObject, currency: String): Boolean
 }
 
 class ConfigManager(
@@ -97,11 +97,10 @@ class ConfigManager(
             mConfigUpdateResult.value = ConfigUpdateResult(null)
             return
         }
-        this.merchantConfig = merchantConfig
 
         val params = mapOf("instance" to merchantConfig.instance)
         val req = MerchantRequest(GET, merchantConfig, "config", params, null,
-            Listener { onMerchantConfigReceived(config, json, it) },
+            Listener { onMerchantConfigReceived(config, json, merchantConfig, it) },
             ErrorListener { onNetworkError(it) }
         )
         queue.add(req)
@@ -110,20 +109,22 @@ class ConfigManager(
     private fun onMerchantConfigReceived(
         newConfig: Config?,
         configJson: JSONObject,
+        merchantConfig: MerchantConfig,
         json: JSONObject
     ) = scope.launch(Dispatchers.Main) {
         val currency = json.getString("currency")
 
         var configValid = true
         configurationReceivers.forEach {
-            configValid = configValid or it.onConfigurationReceived(configJson)
+            val result = it.onConfigurationReceived(configJson, currency)
+            configValid = result && configValid
         }
         if (configValid) {
             newConfig?.let {
                 config = it
                 saveConfig(it)
             }
-            merchantConfig = merchantConfig!!.copy(currency = currency)
+            this@ConfigManager.merchantConfig = merchantConfig.copy(currency = currency)
             mConfigUpdateResult.value = ConfigUpdateResult(currency)
         } else {
             mConfigUpdateResult.value = ConfigUpdateResult(null)

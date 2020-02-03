@@ -1,5 +1,6 @@
 package net.taler.merchantpos.order
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.taler.merchantpos.Amount
 
@@ -10,6 +11,7 @@ data class Category(
     var selected: Boolean = false
 }
 
+@JsonIgnoreProperties("priceAsDouble")
 data class Product(
     @JsonProperty("product_id")
     val id: String,
