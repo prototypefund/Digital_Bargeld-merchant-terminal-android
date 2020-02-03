@@ -24,10 +24,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
     val paymentManager = PaymentManager(configManager, queue, mapper)
 
-    @Deprecated("Use ConfigManager instead!", ReplaceWith("configManager.merchantConfig"))
-    val merchantConfig
-        get() = configManager.merchantConfig
-
     init {
         if (configManager.merchantConfig == null && configManager.config.isValid()) {
             configManager.fetchConfig(configManager.config, false)

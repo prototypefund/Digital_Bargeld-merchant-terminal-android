@@ -42,7 +42,7 @@ class MerchantConfigFragment : Fragment() {
                 username = usernameView.editText!!.text.toString(),
                 password = passwordView.editText!!.text.toString()
             )
-            configManager.fetchConfig(config, true)
+            configManager.fetchConfig(config, true, savePasswordCheckBox.isChecked)
             configManager.configUpdateResult.observe(viewLifecycleOwner, Observer { result ->
                 when {
                     result == null -> return@Observer
@@ -52,13 +52,29 @@ class MerchantConfigFragment : Fragment() {
                 configManager.configUpdateResult.removeObservers(viewLifecycleOwner)
             })
         }
+        forgetPasswordButton.setOnClickListener {
+            configManager.forgetPassword()
+            passwordView.editText!!.text = null
+            forgetPasswordButton.visibility = GONE
+            currencyView.visibility = GONE
+        }
         updateView()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // focus password if this is the only empty field
+        if (!configUrlView.editText!!.text.isBlank() && !usernameView.editText!!.text.isBlank()) {
+            passwordView.requestFocus()
+        }
     }
 
     private fun updateView() {
         configUrlView.editText!!.setText(configManager.config.configUrl)
         usernameView.editText!!.setText(configManager.config.username)
         passwordView.editText!!.setText(configManager.config.password)
+
+        forgetPasswordButton.visibility = if (configManager.config.hasPassword()) VISIBLE else GONE
 
         val currency = configManager.merchantConfig?.currency
         if (currency == null) {

@@ -59,7 +59,7 @@
                 app:boxBackgroundColor="@android:color/transparent"
                 app:boxBackgroundMode="outline"
                 app:endIconMode="password_toggle"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/forgetPasswordButton"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/usernameView">
 
@@ -70,6 +70,29 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <Button
+                android:id="@+id/forgetPasswordButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/config_forget_password"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/passwordView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/passwordView"
+                tools:visibility="visible" />
+
+        <CheckBox
+                android:id="@+id/savePasswordCheckBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:checked="true"
+                android:text="@string/config_save_password"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/passwordView" />
+
         <TextView
                 android:id="@+id/currencyView"
                 android:layout_width="0dp"
@@ -79,7 +102,7 @@
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/passwordView"
+                app:layout_constraintTop_toBottomOf="@+id/savePasswordCheckBox"
                 tools:text="@string/config_currency"
                 tools:visibility="visible" />
 

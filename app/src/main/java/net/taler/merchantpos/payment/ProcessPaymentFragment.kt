@@ -56,17 +56,15 @@ class ProcessPaymentFragment : Fragment() {
         text_view_amount.text = "${payment.order.getTotalAsString()} ${payment.currency}"
         text_view_order_reference.text = "Order Reference: ${payment.orderId}"
         payment.talerPayUri?.let {
-            val myBitmap = makeQrCode(it)
-            qrcode.setImageBitmap(myBitmap)
+            val qrcodeBitmap = makeQrCode(it)
+            qrcode.setImageBitmap(qrcodeBitmap)
         }
     }
 
     private fun onPaymentCancel() {
-        val navController = findNavController()
-        navController.popBackStack()
-
-        val mySnackbar = Snackbar.make(view!!, "Payment Canceled", LENGTH_SHORT)
-        mySnackbar.show()
+        paymentManager.cancelPayment()
+        findNavController().popBackStack()
+        Snackbar.make(view!!, "Payment Canceled", LENGTH_SHORT).show()
     }
 
     private fun makeQrCode(text: String): Bitmap {

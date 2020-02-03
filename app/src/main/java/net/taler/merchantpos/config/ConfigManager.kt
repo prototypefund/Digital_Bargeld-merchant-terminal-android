@@ -60,10 +60,20 @@ class ConfigManager(
         configurationReceivers.add(receiver)
     }
 
+    /**
+     * Returns true if the user needs to provide more configuration
+     * and false if the configuration is sufficient to continue.
+     */
+    fun needsConfig(): Boolean {
+        return !config.isValid() || (!config.hasPassword() && merchantConfig == null)
+    }
+
     @UiThread
-    fun fetchConfig(config: Config, save: Boolean) {
+    fun fetchConfig(config: Config, save: Boolean, savePassword: Boolean = false) {
         mConfigUpdateResult.value = null
-        val configToSave = if (save) config else null
+        val configToSave = if (save) {
+            if (savePassword) config else config.copy(password = "")
+        } else null
 
         val stringRequest = object : JsonObjectRequest(GET, config.configUrl, null,
             Listener { onConfigReceived(it, configToSave) },
@@ -118,6 +128,12 @@ class ConfigManager(
         } else {
             mConfigUpdateResult.value = ConfigUpdateResult(null)
         }
+    }
+
+    fun forgetPassword() {
+        config = config.copy(password = "")
+        saveConfig(config)
+        merchantConfig = null
     }
 
     private fun saveConfig(config: Config) {

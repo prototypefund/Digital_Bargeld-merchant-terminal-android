@@ -1,5 +1,9 @@
 package net.taler.merchantpos
 
+import android.content.Intent
+import android.content.Intent.ACTION_MAIN
+import android.content.Intent.CATEGORY_HOME
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.view.MenuItem
@@ -15,6 +19,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
+
 
 class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
@@ -58,7 +63,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     override fun onStart() {
         super.onStart()
-        if (!model.configManager.config.isValid()) {
+        if (model.configManager.needsConfig()) {
             nav.navigate(R.id.action_global_merchantSettings)
         } else if (model.configManager.merchantConfig == null) {
             nav.navigate(R.id.action_global_configFetcher)
@@ -91,6 +96,13 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(START)) {
             drawerLayout.closeDrawer(START)
+        } else if (nav.currentDestination?.id == R.id.merchantSettings && model.configManager.needsConfig()) {
+            // we are in the configuration screen and need a config to continue
+            val intent = Intent(ACTION_MAIN).apply {
+                addCategory(CATEGORY_HOME)
+                flags = FLAG_ACTIVITY_NEW_TASK
+            }
+            startActivity(intent)
         } else {
             super.onBackPressed()
         }

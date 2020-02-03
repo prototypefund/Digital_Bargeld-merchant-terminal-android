@@ -34,5 +34,7 @@
     <string name="config_auth_error">Invalid username or password</string>
     <string name="config_error">Error: Invalid Configuration</string>
     <string name="config_fetching">Fetching Configuration…</string>
+    <string name="config_save_password">Remember Password</string>
+    <string name="config_forget_password">Forget</string>
 
 </resources>

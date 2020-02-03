@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_order.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
@@ -54,6 +55,13 @@ class OrderFragment : Fragment() {
             val order = orderManager.order.value ?: return@setOnClickListener
             paymentManager.createPayment(order)
             nav.navigate(R.id.action_order_to_processPayment)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (viewModel.configManager.needsConfig()) {
+            findNavController().navigate(R.id.action_global_merchantSettings)
         }
     }
 

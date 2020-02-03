@@ -9,6 +9,7 @@ data class Config(
     val password: String
 ) {
     fun isValid() = !configUrl.isBlank()
+    fun hasPassword() = !password.isBlank()
 }
 
 data class MerchantConfig(

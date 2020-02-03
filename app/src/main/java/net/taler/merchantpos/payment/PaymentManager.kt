@@ -123,6 +123,10 @@ class PaymentManager(
 
     private fun onNetworkError(volleyError: VolleyError) {
         Log.e(PaymentManager::class.java.simpleName, volleyError.toString())
+        cancelPayment()
+    }
+
+    fun cancelPayment() {
         mPayment.value = mPayment.value!!.copy(error = true)
         checkTimer.cancel()
     }
