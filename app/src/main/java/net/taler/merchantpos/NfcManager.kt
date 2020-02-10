@@ -1,5 +1,7 @@
 package net.taler.merchantpos
 
+import android.app.Activity
+import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.NfcAdapter.FLAG_READER_NFC_A
 import android.nfc.NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK
@@ -16,16 +18,34 @@ class NfcManager : NfcAdapter.ReaderCallback {
 
     companion object {
         const val TAG = "taler-merchant"
+
+        /**
+         * Enables NFC reader mode. Don't forget to call [stop] afterwards.
+         */
+        fun start(activity: Activity, nfcManager: NfcManager) {
+            getNfcAdapter(activity)?.enableReaderMode(activity, nfcManager, nfcManager.flags, null)
+        }
+
+        /**
+         * Disables NFC reader mode. Call after [start].
+         */
+        fun stop(activity: Activity) {
+            getNfcAdapter(activity)?.disableReaderMode(activity)
+        }
+
+        private fun getNfcAdapter(context: Context): NfcAdapter? {
+            return NfcAdapter.getDefaultAdapter(context)
+        }
     }
 
-    val TALER_AID = "A0000002471001"
-    val flags = FLAG_READER_NFC_A or FLAG_READER_SKIP_NDEF_CHECK
+    private val TALER_AID = "A0000002471001"
+    private val flags = FLAG_READER_NFC_A or FLAG_READER_SKIP_NDEF_CHECK
 
-    private var contractUri: String? = null
+    private var tagString: String? = null
     private var currentTag: IsoDep? = null
 
-    fun setContractUri(contractUri: String) {
-        this.contractUri = contractUri
+    fun setTagString(tagString: String) {
+        this.tagString = tagString
     }
 
     override fun onTagDiscovered(tag: Tag?) {
@@ -39,10 +59,9 @@ class NfcManager : NfcAdapter.ReaderCallback {
 
         isoDep.transceive(apduSelectFile())
 
-        val contractUri: String? = contractUri
-
-        if (contractUri != null) {
-            isoDep.transceive(apduPutTalerData(1, contractUri.toByteArray()))
+        val tagString: String? = tagString
+        if (tagString != null) {
+            isoDep.transceive(apduPutTalerData(1, tagString.toByteArray()))
         }
 
         // FIXME: use better pattern for sleeps in between requests

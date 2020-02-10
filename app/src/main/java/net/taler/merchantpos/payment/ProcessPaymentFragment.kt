@@ -1,9 +1,5 @@
 package net.taler.merchantpos.payment
 
-import android.graphics.Bitmap
-import android.graphics.Bitmap.Config.RGB_565
-import android.graphics.Color.BLACK
-import android.graphics.Color.WHITE
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +10,9 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-import com.google.zxing.BarcodeFormat.QR_CODE
-import com.google.zxing.common.BitMatrix
-import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.android.synthetic.main.fragment_process_payment.*
 import net.taler.merchantpos.MainViewModel
+import net.taler.merchantpos.QrCodeManager.makeQrCode
 import net.taler.merchantpos.R
 import net.taler.merchantpos.order.getTotalAsString
 
@@ -65,20 +59,6 @@ class ProcessPaymentFragment : Fragment() {
         paymentManager.cancelPayment()
         findNavController().popBackStack()
         Snackbar.make(view!!, "Payment Canceled", LENGTH_SHORT).show()
-    }
-
-    private fun makeQrCode(text: String): Bitmap {
-        val qrCodeWriter = QRCodeWriter()
-        val bitMatrix: BitMatrix = qrCodeWriter.encode(text, QR_CODE, 256, 256)
-        val height = bitMatrix.height
-        val width = bitMatrix.width
-        val bmp = Bitmap.createBitmap(width, height, RGB_565)
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                bmp.setPixel(x, y, if (bitMatrix.get(x, y)) BLACK else WHITE)
-            }
-        }
-        return bmp
     }
 
 }

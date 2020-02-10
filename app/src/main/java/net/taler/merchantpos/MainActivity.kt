@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.Intent.ACTION_MAIN
 import android.content.Intent.CATEGORY_HOME
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
@@ -25,7 +24,6 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     private val model: MainViewModel by viewModels()
     private val nfcManager = NfcManager()
-    private var nfcAdapter: NfcAdapter? = null
 
     private lateinit var nav: NavController
     private lateinit var drawerLayout: DrawerLayout
@@ -34,10 +32,9 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         model.paymentManager.payment.observe(this, Observer { payment ->
             payment?.talerPayUri?.let {
-                nfcManager.setContractUri(it)
+                nfcManager.setTagString(it)
             }
         })
 
@@ -73,12 +70,12 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     public override fun onResume() {
         super.onResume()
         // TODO should we only read tags when a payment is to be made?
-        nfcAdapter?.enableReaderMode(this, nfcManager, nfcManager.flags, null)
+        NfcManager.start(this, nfcManager)
     }
 
     public override fun onPause() {
         super.onPause()
-        nfcAdapter?.disableReaderMode(this)
+        NfcManager.stop(this)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
