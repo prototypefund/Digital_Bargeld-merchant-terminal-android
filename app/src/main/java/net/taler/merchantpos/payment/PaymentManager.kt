@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.config.MerchantRequest
 import net.taler.merchantpos.order.Order
-import net.taler.merchantpos.order.getTotalAsString
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLEncoder
@@ -53,11 +52,8 @@ class PaymentManager(
         val merchantConfig = configManager.merchantConfig!!
 
         val currency = merchantConfig.currency!!
-        val orderTotal = order.getTotalAsString()
-        val amount = "$currency:$orderTotal"
-        val summary = order.map {
-            "${it.value} x ${it.key.description}"
-        }.joinToString()
+        val amount = "$currency:${order.totalAsString}"
+        val summary = order.summary
 
         mPayment.value = Payment(order, summary, currency)
 
@@ -84,7 +80,7 @@ class PaymentManager(
 
     private fun Order.getProductsJson(): JSONArray {
         val json = JSONArray()
-        forEach { product, quantity ->
+        products.forEach { (product, quantity) ->
             val node = mapper.valueToTree<ObjectNode>(product).apply {
                 remove("categories")
                 put("quantity", quantity)

@@ -25,8 +25,10 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private val productsByCategory = HashMap<Category, ArrayList<Product>>()
 
     private val mOrder = MutableLiveData<Order>()
+    private val newOrder  // an empty order containing only available categories
+        get() = Order(productsByCategory.keys.map { it.id to it }.toMap())
     internal val order: LiveData<Order> = mOrder
-    internal val orderTotal: LiveData<Double> = map(mOrder) { it.getTotal() }
+    internal val orderTotal: LiveData<Double> = map(mOrder) { it.total }
 
     private val mProducts = MutableLiveData<List<Product>>()
     internal val products: LiveData<List<Product>> = mProducts
@@ -97,10 +99,8 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
     @UiThread
     internal fun addProduct(product: Product) {
-        val map = mOrder.value ?: HashMap()
-        val quantity = map[product] ?: 0
-        map[product] = quantity + 1
-        mOrder.value = map
+        val order = mOrder.value ?: newOrder
+        mOrder.value = order + product
         mRestartState.value = ENABLED
     }
 
@@ -112,22 +112,9 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
             undoOrder = null
         } else {
             undoOrder = mOrder.value
-            mOrder.value = HashMap()
+            mOrder.value = newOrder
             mRestartState.value = UNDO
         }
     }
 
-}
-
-fun Order.getTotal(): Double {
-    var total = 0.0
-    forEach {
-        val price = it.key.priceAsDouble
-        total += price * it.value
-    }
-    return total
-}
-
-fun Order.getTotalAsString(): String {
-    return String.format("%.2f", getTotal())
 }

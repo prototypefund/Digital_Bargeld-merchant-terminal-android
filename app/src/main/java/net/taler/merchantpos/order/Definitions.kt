@@ -24,6 +24,37 @@ data class Product(
     val priceAsDouble by lazy { Amount.fromString(price).amount.toDouble() }
 }
 
-typealias Order = HashMap<Product, Int>
+data class Order(val availableCategories: Map<Int, Category>) {
+    val products = HashMap<Product, Int>()
+    val summary: String
+        get() {
+            val categories = HashMap<Category, Int>()
+            products.forEach { (product, quantity) ->
+                val categoryId = product.categories[0]
+                val category = availableCategories.getValue(categoryId)
+                val oldQuantity = categories[category] ?: 0
+                categories[category] = oldQuantity + quantity
+            }
+            return categories.map { (category, quantity) ->
+                "$quantity x ${category.name}"
+            }.joinToString()
+        }
+    val total: Double
+        get() {
+            var total = 0.0
+            products.forEach { (product, quantity) ->
+                val price = product.priceAsDouble
+                total += price * quantity
+            }
+            return total
+        }
+    val totalAsString: String
+        get() = String.format("%.2f", total)
+
+    operator fun plus(product: Product): Order {
+        products[product] = (products[product] ?: 0) + 1
+        return this
+    }
+}
 
 typealias OrderLine = Pair<Product, Int>

@@ -14,7 +14,6 @@ import kotlinx.android.synthetic.main.fragment_process_payment.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.QrCodeManager.makeQrCode
 import net.taler.merchantpos.R
-import net.taler.merchantpos.order.getTotalAsString
 
 class ProcessPaymentFragment : Fragment() {
 
@@ -47,7 +46,7 @@ class ProcessPaymentFragment : Fragment() {
             model.orderManager.restartOrUndo()
             return
         }
-        text_view_amount.text = "${payment.order.getTotalAsString()} ${payment.currency}"
+        text_view_amount.text = "${payment.order.totalAsString} ${payment.currency}"
         text_view_order_reference.text = "Order Reference: ${payment.orderId}"
         payment.talerPayUri?.let {
             val qrcodeBitmap = makeQrCode(it)

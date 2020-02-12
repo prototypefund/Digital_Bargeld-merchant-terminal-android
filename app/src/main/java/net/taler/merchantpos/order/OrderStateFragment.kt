@@ -36,7 +36,7 @@ class OrderStateFragment : Fragment() {
         }
 
         orderManager.order.observe(viewLifecycleOwner, Observer { order ->
-            adapter.setItems(order)
+            adapter.setItems(order.products)
         })
         orderManager.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
             if (orderTotal == 0.0) {
