@@ -18,7 +18,7 @@ import net.taler.merchantpos.R
 import net.taler.merchantpos.order.ProductAdapter.ProductViewHolder
 
 interface ProductSelectionListener {
-    fun onProductSelected(product: Product)
+    fun onProductSelected(product: ConfigProduct)
 }
 
 class ProductsFragment : Fragment(), ProductSelectionListener {
@@ -51,7 +51,7 @@ class ProductsFragment : Fragment(), ProductSelectionListener {
         })
     }
 
-    override fun onProductSelected(product: Product) {
+    override fun onProductSelected(product: ConfigProduct) {
         orderManager.addProduct(product)
     }
 
@@ -61,7 +61,7 @@ private class ProductAdapter(
     private val listener: ProductSelectionListener
 ) : Adapter<ProductViewHolder>() {
 
-    private val products = ArrayList<Product>()
+    private val products = ArrayList<ConfigProduct>()
 
     override fun getItemCount() = products.size
 
@@ -75,7 +75,7 @@ private class ProductAdapter(
         holder.bind(products[position])
     }
 
-    fun setItems(items: List<Product>) {
+    fun setItems(items: List<ConfigProduct>) {
         products.clear()
         products.addAll(items)
         notifyDataSetChanged()
@@ -85,7 +85,7 @@ private class ProductAdapter(
         private val name: TextView = v.findViewById(R.id.name)
         private val price: TextView = v.findViewById(R.id.price)
 
-        fun bind(product: Product) {
+        fun bind(product: ConfigProduct) {
             name.text = product.description
             price.text = product.priceAsDouble.toString()
             v.setOnClickListener { listener.onProductSelected(product) }

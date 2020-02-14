@@ -22,7 +22,7 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         val TAG = OrderManager::class.java.simpleName
     }
 
-    private val productsByCategory = HashMap<Category, ArrayList<Product>>()
+    private val productsByCategory = HashMap<Category, ArrayList<ConfigProduct>>()
 
     private val mOrder = MutableLiveData<Order>()
     private val newOrder  // an empty order containing only available categories
@@ -30,8 +30,8 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     internal val order: LiveData<Order> = mOrder
     internal val orderTotal: LiveData<Double> = map(mOrder) { it.total }
 
-    private val mProducts = MutableLiveData<List<Product>>()
-    internal val products: LiveData<List<Product>> = mProducts
+    private val mProducts = MutableLiveData<List<ConfigProduct>>()
+    internal val products: LiveData<List<ConfigProduct>> = mProducts
 
     private val mCategories = MutableLiveData<List<Category>>()
     internal val categories: LiveData<List<Category>> = mCategories
@@ -55,8 +55,8 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
         // parse products (live data gets updated in setCurrentCategory())
         val productsStr = json.getJSONArray("products").toString()
-        val productsType = object : TypeReference<List<Product>>() {}
-        val products: List<Product> = mapper.readValue(productsStr, productsType)
+        val productsType = object : TypeReference<List<ConfigProduct>>() {}
+        val products: List<ConfigProduct> = mapper.readValue(productsStr, productsType)
 
         // group products by categories
         productsByCategory.clear()
@@ -75,7 +75,7 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
                 if (productsByCategory.containsKey(category)) {
                     productsByCategory[category]?.add(product)
                 } else {
-                    productsByCategory[category] = ArrayList<Product>().apply { add(product) }
+                    productsByCategory[category] = ArrayList<ConfigProduct>().apply { add(product) }
                 }
             }
         }
@@ -98,7 +98,7 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     }
 
     @UiThread
-    internal fun addProduct(product: Product) {
+    internal fun addProduct(product: ConfigProduct) {
         val order = mOrder.value ?: newOrder
         mOrder.value = order + product
         mRestartState.value = ENABLED

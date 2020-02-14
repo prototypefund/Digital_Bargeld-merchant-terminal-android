@@ -65,7 +65,7 @@ private class OrderAdapter : RecyclerView.Adapter<OrderViewHolder>() {
         holder.bind(orderLines[position])
     }
 
-    fun setItems(items: HashMap<Product, Int>) {
+    fun setItems(items: HashMap<ConfigProduct, Int>) {
         orderLines.clear()
         items.forEach { t -> orderLines.add(t.toPair()) }
         notifyDataSetChanged()

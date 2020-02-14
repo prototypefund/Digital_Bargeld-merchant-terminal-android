@@ -12,9 +12,9 @@ import com.android.volley.Response.ErrorListener
 import com.android.volley.Response.Listener
 import com.android.volley.VolleyError
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.config.MerchantRequest
+import net.taler.merchantpos.order.ContractProduct
 import net.taler.merchantpos.order.Order
 import org.json.JSONArray
 import org.json.JSONObject
@@ -79,15 +79,9 @@ class PaymentManager(
     }
 
     private fun Order.getProductsJson(): JSONArray {
-        val json = JSONArray()
-        products.forEach { (product, quantity) ->
-            val node = mapper.valueToTree<ObjectNode>(product).apply {
-                remove("categories")
-                put("quantity", quantity)
-            }
-            json.put(JSONObject(mapper.writeValueAsString(node)))
-        }
-        return json
+        val contractProducts = products.map { ContractProduct(it.key, it.value) }
+        val productsStr = mapper.writeValueAsString(contractProducts)
+        return JSONArray(productsStr)
     }
 
     private fun onOrderCreated(orderResponse: JSONObject) {
