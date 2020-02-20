@@ -20,6 +20,13 @@ class NfcManager : NfcAdapter.ReaderCallback {
         const val TAG = "taler-merchant"
 
         /**
+         * Returns true if NFC is supported and false otherwise.
+         */
+        fun hasNfc(context: Context): Boolean {
+            return getNfcAdapter(context) != null
+        }
+
+        /**
          * Enables NFC reader mode. Don't forget to call [stop] afterwards.
          */
         fun start(activity: Activity, nfcManager: NfcManager) {

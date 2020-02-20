@@ -12,6 +12,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import kotlinx.android.synthetic.main.fragment_process_payment.*
 import net.taler.merchantpos.MainViewModel
+import net.taler.merchantpos.NfcManager.Companion.hasNfc
 import net.taler.merchantpos.QrCodeManager.makeQrCode
 import net.taler.merchantpos.R
 
@@ -28,6 +29,9 @@ class ProcessPaymentFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val introRes =
+            if (hasNfc(requireContext())) R.string.payment_intro_nfc else R.string.payment_intro
+        textView2.setText(introRes)
         paymentManager.payment.observe(viewLifecycleOwner, Observer { payment ->
             onPaymentStateChanged(payment)
         })

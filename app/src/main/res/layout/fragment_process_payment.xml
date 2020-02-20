@@ -25,7 +25,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="32dp" />
         <TextView
-                android:text="Please scan QR Code or use NFC to pay"
+                android:text="@string/payment_intro_nfc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView2"
