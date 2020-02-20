@@ -68,12 +68,18 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
         // group products by categories
         productsByCategory.clear()
+        val seenIds = ArrayList<String>()
         products.forEach { product ->
             val productCurrency = fromString(product.price).currency
             if (productCurrency != currency) {
                 Log.e(TAG, "Product $product has currency $productCurrency, $currency expected")
                 return false
             }
+            if (seenIds.contains(product.id)) {
+                Log.e(TAG, "Product $product has duplicate product_id ${product.id}")
+                return false
+            }
+            seenIds.add(product.id)
             product.categories.forEach { categoryId ->
                 val category = categories.find { it.id == categoryId }
                 if (category == null) {
