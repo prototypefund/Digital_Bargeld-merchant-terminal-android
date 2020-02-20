@@ -78,6 +78,14 @@ data class Order(val availableCategories: Map<Int, Category>) {
         products[product] = (products[product] ?: 0) + 1
         return this
     }
+
+    operator fun minus(product: ConfigProduct): Order {
+        var quantity = products[product] ?: throw IllegalStateException()
+        quantity -= 1
+        if (quantity > 0) products[product] = quantity
+        else products.remove(product)
+        return this
+    }
 }
 
 typealias OrderLine = Pair<ConfigProduct, Int>

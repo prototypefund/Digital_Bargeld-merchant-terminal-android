@@ -32,7 +32,7 @@ class ConfigFetcherFragment : Fragment() {
             when {
                 result == null -> return@Observer
                 result.error -> onNetworkError(result.authError)
-                else -> findNavController().navigate(R.id.order)
+                else -> findNavController().navigate(R.id.action_configFetcher_to_order)
             }
         })
     }

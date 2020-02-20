@@ -63,6 +63,28 @@
             app:layout_constraintStart_toStartOf="parent" />
 
     <Button
+            android:id="@+id/plusButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:minWidth="48dp"
+            android:text="+1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/minusButton"
+            tools:ignore="HardcodedText" />
+
+    <Button
+            android:id="@+id/minusButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:minWidth="48dp"
+            android:text="-1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/restartButton"
+            tools:ignore="HardcodedText" />
+
+    <Button
             android:id="@+id/reconfigureButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -70,7 +92,7 @@
             android:backgroundTint="@color/bottomButtons"
             android:text="@string/button_reconfigure"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/restartButton" />
+            app:layout_constraintStart_toEndOf="@+id/plusButton" />
 
     <Button
             android:id="@+id/historyButton"

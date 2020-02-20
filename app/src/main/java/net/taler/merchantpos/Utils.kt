@@ -1,5 +1,9 @@
 package net.taler.merchantpos
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.Observer
+
 object Utils {
 
     private const val HEX_CHARS = "0123456789ABCDEF"
@@ -33,4 +37,33 @@ object Utils {
         return result.toString()
     }
 
+}
+
+class CombinedLiveData<T, K, S>(
+    source1: LiveData<T>,
+    source2: LiveData<K>,
+    private val combine: (data1: T?, data2: K?) -> S
+) : MediatorLiveData<S>() {
+
+    private var data1: T? = null
+    private var data2: K? = null
+
+    init {
+        super.addSource(source1) { t ->
+            data1 = t
+            value = combine(data1, data2)
+        }
+        super.addSource(source2) { k ->
+            data2 = k
+            value = combine(data1, data2)
+        }
+    }
+
+    override fun <S : Any?> addSource(source: LiveData<S>, onChanged: Observer<in S>) {
+        throw UnsupportedOperationException()
+    }
+
+    override fun <T : Any?> removeSource(toRemote: LiveData<T>) {
+        throw UnsupportedOperationException()
+    }
 }

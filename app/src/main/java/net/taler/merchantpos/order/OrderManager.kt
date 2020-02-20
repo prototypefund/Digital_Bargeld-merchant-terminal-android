@@ -8,6 +8,7 @@ import androidx.lifecycle.Transformations.map
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.taler.merchantpos.Amount.Companion.fromString
+import net.taler.merchantpos.CombinedLiveData
 import net.taler.merchantpos.config.ConfigurationReceiver
 import net.taler.merchantpos.order.RestartState.DISABLED
 import net.taler.merchantpos.order.RestartState.ENABLED
@@ -39,6 +40,13 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private var undoOrder: Order? = null
     private val mRestartState = MutableLiveData<RestartState>().apply { value = DISABLED }
     internal val restartState: LiveData<RestartState> = mRestartState
+
+    private val mSelectedOrderLine = MutableLiveData<OrderLine>()
+
+    internal val modifyOrderAllowed =
+        CombinedLiveData(restartState, mSelectedOrderLine) { restartState, selectedOrderLine ->
+            restartState != DISABLED && selectedOrderLine != null
+        }
 
     @Suppress("BlockingMethodInNonBlockingContext") // run on Dispatchers.Main
     override suspend fun onConfigurationReceived(json: JSONObject, currency: String): Boolean {
@@ -105,6 +113,14 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     }
 
     @UiThread
+    internal fun removeProduct(product: ConfigProduct) {
+        val order = mOrder.value ?: throw IllegalStateException()
+        val modifiedOrder = order - product
+        mOrder.value = modifiedOrder
+        mRestartState.value = if (modifiedOrder.products.isEmpty()) DISABLED else ENABLED
+    }
+
+    @UiThread
     internal fun restartOrUndo() {
         if (restartState.value == UNDO) {
             mOrder.value = undoOrder
@@ -115,6 +131,23 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
             mOrder.value = newOrder
             mRestartState.value = UNDO
         }
+    }
+
+    @UiThread
+    fun selectOrderLine(orderLine: OrderLine?) {
+        mSelectedOrderLine.value = orderLine
+    }
+
+    @UiThread
+    fun increaseSelectedOrderLine() {
+        val orderLine = mSelectedOrderLine.value ?: throw IllegalStateException()
+        addProduct(orderLine.first)
+    }
+
+    @UiThread
+    fun decreaseSelectedOrderLine() {
+        val orderLine = mSelectedOrderLine.value ?: throw IllegalStateException()
+        removeProduct(orderLine.first)
     }
 
 }
