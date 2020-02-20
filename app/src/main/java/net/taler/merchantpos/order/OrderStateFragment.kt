@@ -14,6 +14,8 @@ import androidx.recyclerview.selection.ItemKeyProvider
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.selection.StorageStrategy
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
@@ -23,7 +25,6 @@ import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 import net.taler.merchantpos.order.OrderAdapter.OrderLineLookup
 import net.taler.merchantpos.order.OrderAdapter.OrderViewHolder
-
 
 class OrderStateFragment : Fragment() {
 
@@ -67,7 +68,14 @@ class OrderStateFragment : Fragment() {
         this.tracker = tracker
 
         orderManager.order.observe(viewLifecycleOwner, Observer { order ->
-            adapter.setItems(order.products)
+            adapter.setItems(order.products) {
+                // workaround for bug: SelectionObserver doesn't update when removing selected item
+                if (tracker.hasSelection()) {
+                    val key = tracker.selection.first()
+                    val product = order.products.find { it.id == key }
+                    if (product == null) tracker.clearSelection()
+                }
+            }
         })
         orderManager.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
             if (orderTotal == 0.0) {
@@ -89,9 +97,18 @@ private class OrderAdapter : Adapter<OrderViewHolder>() {
 
     lateinit var tracker: SelectionTracker<String>
     val keyProvider = OrderKeyProvider()
-    private val orderLines = ArrayList<OrderLine>()
+    private val itemCallback = object : DiffUtil.ItemCallback<ConfigProduct>() {
+        override fun areItemsTheSame(oldItem: ConfigProduct, newItem: ConfigProduct): Boolean {
+            return oldItem == newItem
+        }
 
-    override fun getItemCount() = orderLines.size
+        override fun areContentsTheSame(oldItem: ConfigProduct, newItem: ConfigProduct): Boolean {
+            return oldItem.quantity == newItem.quantity
+        }
+    }
+    private val differ = AsyncListDiffer<ConfigProduct>(this, itemCallback)
+
+    override fun getItemCount() = differ.currentList.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
         val view =
@@ -100,18 +117,19 @@ private class OrderAdapter : Adapter<OrderViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        val item = orderLines[position]
-        holder.bind(item, tracker.isSelected(item.first.id))
+        val item = getItem(position)!!
+        holder.bind(item, tracker.isSelected(item.id))
     }
 
-    fun setItems(items: HashMap<ConfigProduct, Int>) {
-        orderLines.clear()
-        items.forEach { t -> orderLines.add(t.toPair()) }
-        notifyDataSetChanged()
+    fun setItems(items: List<ConfigProduct>, commitCallback: () -> Unit) {
+        // toMutableList() is needed for some reason, otherwise doesn't update adapter
+        differ.submitList(items.toMutableList(), commitCallback)
     }
 
-    fun getItemByKey(key: String): OrderLine? {
-        return orderLines.find { it.first.id == key }
+    fun getItem(position: Int): ConfigProduct? = differ.currentList[position]
+
+    fun getItemByKey(key: String): ConfigProduct? {
+        return differ.currentList.find { it.id == key }
     }
 
     private inner class OrderViewHolder(private val v: View) : ViewHolder(v) {
@@ -119,18 +137,18 @@ private class OrderAdapter : Adapter<OrderViewHolder>() {
         private val name: TextView = v.findViewById(R.id.name)
         private val price: TextView = v.findViewById(R.id.price)
 
-        fun bind(orderLine: OrderLine, selected: Boolean) {
+        fun bind(product: ConfigProduct, selected: Boolean) {
             v.isActivated = selected
-            quantity.text = orderLine.second.toString()
-            name.text = orderLine.first.description
-            price.text = String.format("%.2f", orderLine.first.priceAsDouble * orderLine.second)
+            quantity.text = product.quantity.toString()
+            name.text = product.description
+            price.text = String.format("%.2f", product.priceAsDouble * product.quantity)
         }
     }
 
     private inner class OrderKeyProvider : ItemKeyProvider<String>(SCOPE_MAPPED) {
-        override fun getKey(position: Int) = orderLines[position].first.id
+        override fun getKey(position: Int) = getItem(position)!!.id
         override fun getPosition(key: String): Int {
-            return orderLines.indexOfFirst { it.first.id == key }
+            return differ.currentList.indexOfFirst { it.id == key }
         }
     }
 

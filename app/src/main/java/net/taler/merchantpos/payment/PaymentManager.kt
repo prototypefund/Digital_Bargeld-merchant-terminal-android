@@ -79,7 +79,7 @@ class PaymentManager(
     }
 
     private fun Order.getProductsJson(): JSONArray {
-        val contractProducts = products.map { ContractProduct(it.key, it.value) }
+        val contractProducts = products.map { ContractProduct(it) }
         val productsStr = mapper.writeValueAsString(contractProducts)
         return JSONArray(productsStr)
     }

@@ -41,7 +41,7 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private val mRestartState = MutableLiveData<RestartState>().apply { value = DISABLED }
     internal val restartState: LiveData<RestartState> = mRestartState
 
-    private val mSelectedOrderLine = MutableLiveData<OrderLine>()
+    private val mSelectedOrderLine = MutableLiveData<ConfigProduct>()
 
     internal val modifyOrderAllowed =
         CombinedLiveData(restartState, mSelectedOrderLine) { restartState, selectedOrderLine ->
@@ -134,20 +134,20 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     }
 
     @UiThread
-    fun selectOrderLine(orderLine: OrderLine?) {
-        mSelectedOrderLine.value = orderLine
+    fun selectOrderLine(product: ConfigProduct?) {
+        mSelectedOrderLine.value = product
     }
 
     @UiThread
     fun increaseSelectedOrderLine() {
         val orderLine = mSelectedOrderLine.value ?: throw IllegalStateException()
-        addProduct(orderLine.first)
+        addProduct(orderLine)
     }
 
     @UiThread
     fun decreaseSelectedOrderLine() {
         val orderLine = mSelectedOrderLine.value ?: throw IllegalStateException()
-        removeProduct(orderLine.first)
+        removeProduct(orderLine)
     }
 
 }
