@@ -14,6 +14,9 @@ import java.io.ByteArrayOutputStream
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
+@Suppress("unused")
+private const val TALER_AID = "A0000002471001"
+
 class NfcManager : NfcAdapter.ReaderCallback {
 
     companion object {
@@ -45,7 +48,6 @@ class NfcManager : NfcAdapter.ReaderCallback {
         }
     }
 
-    private val TALER_AID = "A0000002471001"
     private val flags = FLAG_READER_NFC_A or FLAG_READER_SKIP_NDEF_CHECK
 
     private var tagString: String? = null

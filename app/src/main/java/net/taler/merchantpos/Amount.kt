@@ -3,12 +3,15 @@ package net.taler.merchantpos
 import org.json.JSONObject
 
 data class Amount(val currency: String, val amount: String) {
+    @Suppress("unused")
     fun isZero(): Boolean {
         return amount.toDouble() == 0.0
     }
 
     companion object {
-        const val FRACTIONAL_BASE = 1e8;
+        private const val FRACTIONAL_BASE = 1e8
+
+        @Suppress("unused")
         fun fromJson(jsonAmount: JSONObject): Amount {
             val amountCurrency = jsonAmount.getString("currency")
             val amountValue = jsonAmount.getString("value")

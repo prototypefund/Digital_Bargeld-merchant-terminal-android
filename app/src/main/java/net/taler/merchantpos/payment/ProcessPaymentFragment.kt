@@ -1,5 +1,6 @@
 package net.taler.merchantpos.payment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -50,8 +51,9 @@ class ProcessPaymentFragment : Fragment() {
             model.orderManager.restartOrUndo()
             return
         }
+        @SuppressLint("SetTextI18n")
         text_view_amount.text = "${payment.order.totalAsString} ${payment.currency}"
-        text_view_order_reference.text = "Order Reference: ${payment.orderId}"
+        text_view_order_reference.text = getString(R.string.payment_order_ref, payment.orderId)
         payment.talerPayUri?.let {
             val qrcodeBitmap = makeQrCode(it)
             qrcode.setImageBitmap(qrcodeBitmap)

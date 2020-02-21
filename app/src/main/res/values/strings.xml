@@ -1,18 +1,11 @@
 <resources>
-    <string name="app_name">Taler Merchant PoS Termial</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">Taler Merchant PoS Terminal</string>
+    <string name="app_name_short">Merchant Terminal</string>
+    <string name="project_name">GNU Taler</string>
 
-    <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
-    <string name="menu_tools">Tools</string>
-    <string name="menu_share">Share</string>
-    <string name="menu_send">Send</string>
+    <string name="menu_order">Order</string>
+    <string name="menu_history">History</string>
+    <string name="menu_settings">Settings</string>
 
     <string name="order_total">Total: %1$.2f</string>
     <string name="order_restart">Restart</string>
@@ -36,5 +29,12 @@
 
     <string name="payment_intro_nfc">Please scan QR Code or use NFC to pay</string>
     <string name="payment_intro">Please scan QR Code to pay</string>
+    <string name="payment_cancel">Cancel Payment</string>
+    <string name="payment_received">Payment Received</string>
+    <string name="payment_back_button">Go Back</string>
+    <string name="payment_order_ref">Order Reference: %s</string>
+
+    <string name="history_received_at">Received at</string>
+    <string name="history_ref_no">Ref. No:</string>
 
 </resources>

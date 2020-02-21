@@ -69,15 +69,15 @@ class MerchantHistory : Fragment() {
             adapter = historyListAdapter
         }
 
-        swiperefresh.isRefreshing = false
-        swiperefresh.setOnRefreshListener {
+        swipeRefresh.isRefreshing = false
+        swipeRefresh.setOnRefreshListener {
             Log.v(TAG, "refreshing!")
             fetchHistory()
         }
 
         this.isLoading.observe(viewLifecycleOwner, androidx.lifecycle.Observer { loading ->
             Log.v(TAG, "setting refreshing to $loading")
-            swiperefresh.isRefreshing = loading
+            swipeRefresh.isRefreshing = loading
         })
     }
 

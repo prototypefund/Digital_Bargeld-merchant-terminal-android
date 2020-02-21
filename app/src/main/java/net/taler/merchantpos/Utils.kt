@@ -24,6 +24,7 @@ object Utils {
 
     private val HEX_CHARS_ARRAY = HEX_CHARS.toCharArray()
 
+    @Suppress("unused")
     fun toHex(byteArray: ByteArray): String {
         val result = StringBuffer()
 
