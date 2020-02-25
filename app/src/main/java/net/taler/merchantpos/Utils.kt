@@ -3,9 +3,13 @@ package net.taler.merchantpos
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
+import com.google.android.material.snackbar.BaseTransientBottomBar.ANIMATION_MODE_FADE
+import com.google.android.material.snackbar.BaseTransientBottomBar.Duration
+import com.google.android.material.snackbar.Snackbar.make
 
 object Utils {
 
@@ -60,6 +64,17 @@ fun View.fadeOut(endAction: () -> Unit = {}) {
         alpha = 1f
         endAction.invoke()
     }.start()
+}
+
+fun topSnackbar(view: View, text: CharSequence, @Duration duration: Int) {
+    make(view, text, duration)
+        .setAnimationMode(ANIMATION_MODE_FADE)
+        .setAnchorView(R.id.navHostFragment)
+        .show()
+}
+
+fun topSnackbar(view: View, @StringRes resId: Int, @Duration duration: Int) {
+    topSnackbar(view, view.resources.getText(resId), duration)
 }
 
 class CombinedLiveData<T, K, S>(

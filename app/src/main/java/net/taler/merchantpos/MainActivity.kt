@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         )
 
         val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         nav = navHostFragment.navController
         toolbar.setupWithNavController(nav, appBarConfiguration)
     }

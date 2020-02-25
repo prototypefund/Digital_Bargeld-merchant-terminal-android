@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import kotlinx.android.synthetic.main.fragment_payment_success.*
 import net.taler.merchantpos.R
 
@@ -21,7 +21,7 @@ class PaymentSuccessFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         button_success_back.setOnClickListener {
-            requireActivity().findNavController(R.id.nav_host_fragment).navigateUp()
+            findNavController().navigateUp()
         }
     }
 }

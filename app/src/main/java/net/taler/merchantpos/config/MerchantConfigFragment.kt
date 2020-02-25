@@ -11,11 +11,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import kotlinx.android.synthetic.main.fragment_merchant_config.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
+import net.taler.merchantpos.topSnackbar
 
 /**
  * Fragment that displays merchant settings.
@@ -93,14 +94,14 @@ class MerchantConfigFragment : Fragment() {
     private fun onConfigReceived(currency: String) {
         onResultReceived()
         updateView()
-        Snackbar.make(view!!, "Changed to new $currency merchant", LENGTH_SHORT).show()
+        topSnackbar(view!!, getString(R.string.config_changed, currency), LENGTH_LONG)
         findNavController().navigate(R.id.order)
     }
 
     private fun onNetworkError(authError: Boolean) {
         onResultReceived()
         val res = if (authError) R.string.config_auth_error else R.string.config_error
-        Snackbar.make(view!!, res, LENGTH_SHORT).show()
+        Snackbar.make(view!!, res, LENGTH_LONG).show()
     }
 
     private fun onResultReceived() {

@@ -10,7 +10,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_process_payment.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.NfcManager.Companion.hasNfc
@@ -18,6 +17,7 @@ import net.taler.merchantpos.QrCodeManager.makeQrCode
 import net.taler.merchantpos.R
 import net.taler.merchantpos.fadeIn
 import net.taler.merchantpos.fadeOut
+import net.taler.merchantpos.topSnackbar
 
 class ProcessPaymentFragment : Fragment() {
 
@@ -45,7 +45,7 @@ class ProcessPaymentFragment : Fragment() {
 
     private fun onPaymentStateChanged(payment: Payment) {
         if (payment.error) {
-            Snackbar.make(view!!, R.string.error_network, LENGTH_LONG).show()
+            topSnackbar(view!!, R.string.error_network, LENGTH_LONG)
             findNavController().navigateUp()
             return
         }
@@ -72,7 +72,7 @@ class ProcessPaymentFragment : Fragment() {
     private fun onPaymentCancel() {
         paymentManager.cancelPayment()
         findNavController().navigateUp()
-        Snackbar.make(view!!, R.string.payment_canceled, LENGTH_LONG).show()
+        topSnackbar(view!!, R.string.payment_canceled, LENGTH_LONG)
     }
 
 }

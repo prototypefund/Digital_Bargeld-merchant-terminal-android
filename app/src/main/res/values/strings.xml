@@ -26,6 +26,7 @@
     <string name="config_fetching">Fetching Configuration…</string>
     <string name="config_save_password">Remember Password</string>
     <string name="config_forget_password">Forget</string>
+    <string name="config_changed">Changed to new merchant using %s</string>
 
     <string name="payment_intro_nfc">Please scan QR Code or use NFC to pay</string>
     <string name="payment_intro">Please scan QR Code to pay</string>

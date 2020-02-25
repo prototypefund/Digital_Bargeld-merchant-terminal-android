@@ -120,7 +120,7 @@ class MerchantHistory : Fragment() {
 
     private fun onNetworkError() {
         this.isLoading.value = false
-        Snackbar.make(view!!, "Network Error", LENGTH_SHORT).show()
+        Snackbar.make(view!!, R.string.error_network, LENGTH_SHORT).show()
     }
 
 }
