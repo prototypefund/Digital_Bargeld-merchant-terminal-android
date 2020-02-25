@@ -17,6 +17,7 @@ import net.taler.merchantpos.QrCodeManager.makeQrCode
 import net.taler.merchantpos.R
 import net.taler.merchantpos.fadeIn
 import net.taler.merchantpos.fadeOut
+import net.taler.merchantpos.payment.ProcessPaymentFragmentDirections.Companion.actionProcessPaymentToPaymentSuccess
 import net.taler.merchantpos.topSnackbar
 
 class ProcessPaymentFragment : Fragment() {
@@ -50,8 +51,10 @@ class ProcessPaymentFragment : Fragment() {
             return
         }
         if (payment.paid) {
-            findNavController().navigate(R.id.action_processPayment_to_paymentSuccess)
-            model.orderManager.restartOrUndo()
+            model.orderManager.onOrderPaid(payment.order.id)
+            actionProcessPaymentToPaymentSuccess().let {
+                findNavController().navigate(it)
+            }
             return
         }
         payIntroView.fadeIn()

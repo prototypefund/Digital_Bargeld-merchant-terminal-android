@@ -63,8 +63,9 @@ data class ContractProduct(
     )
 }
 
-data class Order(val availableCategories: Map<Int, Category>) {
+data class Order(val id: Int, val availableCategories: Map<Int, Category>) {
     val products = ArrayList<ConfigProduct>()
+    val title: String = id.toString()
     val summary: String
         get() {
             val categories = HashMap<Category, Int>()

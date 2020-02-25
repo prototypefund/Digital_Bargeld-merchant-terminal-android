@@ -4,18 +4,11 @@ import android.util.Log
 import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations.map
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.taler.merchantpos.Amount.Companion.fromString
-import net.taler.merchantpos.CombinedLiveData
 import net.taler.merchantpos.config.ConfigurationReceiver
-import net.taler.merchantpos.order.RestartState.DISABLED
-import net.taler.merchantpos.order.RestartState.ENABLED
-import net.taler.merchantpos.order.RestartState.UNDO
 import org.json.JSONObject
-
-enum class RestartState { ENABLED, DISABLED, UNDO }
 
 class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
@@ -23,33 +16,22 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         val TAG = OrderManager::class.java.simpleName
     }
 
+    private var orderCounter: Int = 0
+    private val mCurrentOrderId = MutableLiveData<Int>()
+    internal val currentOrderId: LiveData<Int> = mCurrentOrderId
+
     private val productsByCategory = HashMap<Category, ArrayList<ConfigProduct>>()
 
-    private val mOrder = MutableLiveData<Order>()
-    private val newOrder  // an empty order containing only available categories
-        get() = Order(productsByCategory.keys.map { it.id to it }.toMap())
-    internal val order: LiveData<Order> = mOrder
-    internal val orderTotal: LiveData<Double> = map(mOrder) { it.total }
+    private val orders = LinkedHashMap<Int, MutableLiveOrder>()
+
+    private val mHasPreviousOrder = MutableLiveData<Boolean>(false)
+    internal val hasPreviousOrder: LiveData<Boolean> = mHasPreviousOrder
 
     private val mProducts = MutableLiveData<List<ConfigProduct>>()
     internal val products: LiveData<List<ConfigProduct>> = mProducts
 
     private val mCategories = MutableLiveData<List<Category>>()
     internal val categories: LiveData<List<Category>> = mCategories
-
-    private var undoOrder: Order? = null
-    private val mRestartState = MutableLiveData<RestartState>().apply { value = DISABLED }
-    internal val restartState: LiveData<RestartState> = mRestartState
-
-    private val mSelectedOrderLine = MutableLiveData<ConfigProduct>()
-
-    internal var lastAddedProduct: ConfigProduct? = null
-        private set
-
-    internal val modifyOrderAllowed =
-        CombinedLiveData(restartState, mSelectedOrderLine) { restartState, selectedOrderLine ->
-            restartState != DISABLED && selectedOrderLine != null
-        }
 
     @Suppress("BlockingMethodInNonBlockingContext") // run on Dispatchers.Main
     override suspend fun onConfigurationReceived(json: JSONObject, currency: String): Boolean {
@@ -99,10 +81,72 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         return if (productsByCategory.size > 0) {
             mCategories.postValue(categories)
             mProducts.postValue(productsByCategory[categories[0]])
+            // Initialize first empty order, note this won't work when updating config mid-flight
+            val id = orderCounter++
+            orders[id] = MutableLiveOrder(id, productsByCategory)
+            mCurrentOrderId.postValue(id)
             true
         } else {
             false
         }
+    }
+
+    @UiThread
+    internal fun getOrder(orderId: Int): LiveOrder {
+        return orders[orderId] ?: throw IllegalArgumentException()
+    }
+
+    @UiThread
+    internal fun nextOrder() {
+        val currentId = currentOrderId.value!!
+        var foundCurrentOrder = false
+        var nextId: Int? = null
+        for (orderId in orders.keys) {
+            if (foundCurrentOrder) {
+                nextId = orderId
+                break
+            }
+            if (orderId == currentId) foundCurrentOrder = true
+        }
+        if (nextId == null) {
+            nextId = orderCounter++
+            orders[nextId] = MutableLiveOrder(nextId, productsByCategory)
+        }
+        val currentOrder = order(currentId)
+        val stillHasPrevious = if (currentOrder.isEmpty()) {
+            val wasFirst = orders.keys.first() == currentId
+            orders.remove(currentId)
+            !wasFirst  // we still have a previous order if the removed one wasn't the first
+        } else {
+            currentOrder.lastAddedProduct = null  // not needed anymore and would select it
+            true  // we did not remove anything, so our next order still has a previous
+        }
+        mCurrentOrderId.value = nextId
+        mHasPreviousOrder.value = stillHasPrevious
+    }
+
+    @UiThread
+    internal fun previousOrder() {
+        val currentId = currentOrderId.value!!
+        var previousId: Int? = null
+        var foundCurrentOrder = false
+        for (orderId in orders.keys) {
+            if (orderId == currentId) {
+                foundCurrentOrder = true
+                break
+            }
+            previousId = orderId
+        }
+        if (previousId == null || !foundCurrentOrder) {
+            throw AssertionError("Could not find previous order for $currentId")
+        }
+        val currentOrder = order(currentId)
+        // remove current order if empty, or lastAddedProduct as it is not needed anymore
+        // and would get selected when navigating back instead of last selection
+        if (currentOrder.isEmpty()) orders.remove(currentId)
+        else currentOrder.lastAddedProduct = null
+        mCurrentOrderId.value = previousId
+        mHasPreviousOrder.value = previousId != orders.keys.first()
     }
 
     internal fun setCurrentCategory(category: Category) {
@@ -115,49 +159,24 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     }
 
     @UiThread
-    internal fun addProduct(product: ConfigProduct) {
-        lastAddedProduct = product
-        val order = mOrder.value ?: newOrder
-        mOrder.value = order + product
-        mRestartState.value = ENABLED
+    internal fun addProduct(orderId: Int, product: ConfigProduct) {
+        order(orderId).addProduct(product)
     }
 
     @UiThread
-    internal fun removeProduct(product: ConfigProduct) {
-        val order = mOrder.value ?: throw IllegalStateException()
-        val modifiedOrder = order - product
-        mOrder.value = modifiedOrder
-        mRestartState.value = if (modifiedOrder.products.isEmpty()) DISABLED else ENABLED
-    }
-
-    @UiThread
-    internal fun restartOrUndo() {
-        if (restartState.value == UNDO) {
-            mOrder.value = undoOrder
-            mRestartState.value = ENABLED
-            undoOrder = null
-        } else {
-            undoOrder = mOrder.value
-            mOrder.value = newOrder
-            mRestartState.value = UNDO
+    internal fun onOrderPaid(orderId: Int) {
+        if (currentOrderId.value == orderId) {
+            if (hasPreviousOrder.value!!) previousOrder()
+            else {
+                nextOrder()
+                mHasPreviousOrder.value = false
+            }
         }
+        orders.remove(orderId)
     }
 
-    @UiThread
-    fun selectOrderLine(product: ConfigProduct?) {
-        mSelectedOrderLine.value = product
-    }
-
-    @UiThread
-    fun increaseSelectedOrderLine() {
-        val orderLine = mSelectedOrderLine.value ?: throw IllegalStateException()
-        addProduct(orderLine)
-    }
-
-    @UiThread
-    fun decreaseSelectedOrderLine() {
-        val orderLine = mSelectedOrderLine.value ?: throw IllegalStateException()
-        removeProduct(orderLine)
+    private fun order(orderId: Int): MutableLiveOrder {
+        return orders[orderId] ?: throw IllegalStateException()
     }
 
 }

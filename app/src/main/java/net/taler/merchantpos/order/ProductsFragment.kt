@@ -52,7 +52,7 @@ class ProductsFragment : Fragment(), ProductSelectionListener {
     }
 
     override fun onProductSelected(product: ConfigProduct) {
-        orderManager.addProduct(product)
+        orderManager.addProduct(orderManager.currentOrderId.value!!, product)
     }
 
 }

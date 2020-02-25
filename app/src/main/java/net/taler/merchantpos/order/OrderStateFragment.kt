@@ -32,6 +32,7 @@ class OrderStateFragment : Fragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
     private val orderManager by lazy { viewModel.orderManager }
+    private val liveOrder by lazy { orderManager.getOrder(orderManager.currentOrderId.value!!) }
     private val adapter = OrderAdapter()
     private var tracker: SelectionTracker<String>? = null
 
@@ -60,19 +61,23 @@ class OrderStateFragment : Fragment() {
         ).build()
         savedInstanceState?.let { tracker.onRestoreInstanceState(it) }
         adapter.tracker = tracker
+        this.tracker = tracker
+        if (savedInstanceState == null) {
+            // select last selected order line when re-creating this fragment
+            // do it before attaching the tracker observer
+            liveOrder.selectedProductKey?.let { tracker.select(it) }
+        }
         tracker.addObserver(object : SelectionTracker.SelectionObserver<String>() {
             override fun onItemStateChanged(key: String, selected: Boolean) {
                 super.onItemStateChanged(key, selected)
                 val item = if (selected) adapter.getItemByKey(key) else null
-                orderManager.selectOrderLine(item)
+                liveOrder.selectOrderLine(item)
             }
         })
-        this.tracker = tracker
-
-        orderManager.order.observe(viewLifecycleOwner, Observer { order ->
+        liveOrder.order.observe(viewLifecycleOwner, Observer { order ->
             onOrderChanged(order, tracker)
         })
-        orderManager.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
+        liveOrder.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
             if (orderTotal == 0.0) {
                 totalView.fadeOut()
                 totalView.text = null
@@ -91,11 +96,12 @@ class OrderStateFragment : Fragment() {
 
     private fun onOrderChanged(order: Order, tracker: SelectionTracker<String>) {
         adapter.setItems(order.products) {
-            orderManager.lastAddedProduct?.let {
+            liveOrder.lastAddedProduct?.let {
                 val position = adapter.findPosition(it)
                 if (position >= 0) {
-                    orderList.scrollToPosition(position)
-                    orderList.post { this.tracker?.select(it.id) }
+                    // orderList can be null m(
+                    orderList?.scrollToPosition(position)
+                    orderList?.post { this.tracker?.select(it.id) }
                 }
             }
             // workaround for bug: SelectionObserver doesn't update when removing selected item

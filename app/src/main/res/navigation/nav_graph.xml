@@ -3,14 +3,18 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/nav_graph"
-        app:startDestination="@id/order"
+        app:startDestination="@id/configFetcher"
         tools:ignore="UnusedNavigation">
 
     <fragment
             android:id="@+id/order"
             android:name="net.taler.merchantpos.order.OrderFragment"
-            android:label="@string/order_label"
+            android:label=""
             tools:layout="@layout/fragment_order">
+        <argument
+                android:name="orderId"
+                android:defaultValue="0"
+                app:argType="integer" />
         <action
                 android:id="@+id/action_order_to_processPayment"
                 app:destination="@id/processPayment" />

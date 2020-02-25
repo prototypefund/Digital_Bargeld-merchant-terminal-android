@@ -24,4 +24,5 @@ class PaymentSuccessFragment : Fragment() {
             findNavController().navigateUp()
         }
     }
+
 }
