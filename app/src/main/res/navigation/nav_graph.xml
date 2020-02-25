@@ -9,7 +9,7 @@
     <fragment
             android:id="@+id/order"
             android:name="net.taler.merchantpos.order.OrderFragment"
-            android:label="Order"
+            android:label="@string/order_label"
             tools:layout="@layout/fragment_order">
         <action
                 android:id="@+id/action_order_to_processPayment"
@@ -25,7 +25,7 @@
     <fragment
             android:id="@+id/processPayment"
             android:name="net.taler.merchantpos.payment.ProcessPaymentFragment"
-            android:label="Payment Prompt"
+            android:label="@string/payment_process_label"
             tools:layout="@layout/fragment_process_payment">
         <action
                 android:id="@+id/action_processPayment_to_paymentSuccess"
@@ -36,19 +36,19 @@
     <fragment
             android:id="@+id/merchantHistory"
             android:name="net.taler.merchantpos.MerchantHistory"
-            android:label="Payment History"
+            android:label="@string/history_label"
             tools:layout="@layout/fragment_merchant_history" />
 
     <fragment
             android:id="@+id/merchantSettings"
             android:name="net.taler.merchantpos.config.MerchantConfigFragment"
-            android:label="Merchant Settings"
+            android:label="@string/config_label"
             tools:layout="@layout/fragment_merchant_config" />
 
     <fragment
             android:id="@+id/configFetcher"
             android:name="net.taler.merchantpos.config.ConfigFetcherFragment"
-            android:label="Fetching Configuration"
+            android:label="@string/config_fetching_label"
             tools:layout="@layout/fragment_config_fetcher">
         <action
                 android:id="@+id/action_configFetcher_to_merchantSettings"
@@ -64,7 +64,7 @@
     <fragment
             android:id="@+id/paymentSuccess"
             android:name="net.taler.merchantpos.payment.PaymentSuccessFragment"
-            android:label="Payment Received"
+            android:label="@string/payment_received"
             tools:layout="@layout/fragment_payment_success" />
 
     <action
