@@ -52,6 +52,7 @@ class ConfigManager(
         password = prefs.getString(SETTINGS_PASSWORD, "")!!
     )
     var merchantConfig: MerchantConfig? = null
+        private set
 
     private val mConfigUpdateResult = MutableLiveData<ConfigUpdateResult>()
     val configUpdateResult: LiveData<ConfigUpdateResult> = mConfigUpdateResult

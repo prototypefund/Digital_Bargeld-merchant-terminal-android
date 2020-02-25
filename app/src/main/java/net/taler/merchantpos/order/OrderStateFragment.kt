@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import kotlinx.android.synthetic.main.fragment_order_state.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
+import net.taler.merchantpos.fadeIn
+import net.taler.merchantpos.fadeOut
 import net.taler.merchantpos.order.OrderAdapter.OrderLineLookup
 import net.taler.merchantpos.order.OrderAdapter.OrderViewHolder
 
@@ -79,9 +81,12 @@ class OrderStateFragment : Fragment() {
         })
         orderManager.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
             if (orderTotal == 0.0) {
+                totalView.fadeOut()
                 totalView.text = null
             } else {
-                totalView.text = getString(R.string.order_total, orderTotal)
+                val currency = viewModel.configManager.merchantConfig?.currency
+                totalView.text = getString(R.string.order_total, orderTotal, currency)
+                totalView.fadeIn()
             }
         })
     }

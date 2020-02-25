@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#5D4037</color>
     <color name="colorAccent">#FFEB3B</color>
 
+    <color name="highlightedBackground">#E4E4E4</color>
     <color name="selectedBackground">#DADADA</color>
     <color name="bottomButtons">#9E9D24</color>
 
