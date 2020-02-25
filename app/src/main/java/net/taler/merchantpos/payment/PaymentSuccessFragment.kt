@@ -20,7 +20,7 @@ class PaymentSuccessFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        button_success_back.setOnClickListener {
+        paymentButton.setOnClickListener {
             findNavController().navigateUp()
         }
     }

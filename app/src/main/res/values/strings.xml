@@ -31,8 +31,8 @@
     <string name="payment_intro_nfc">Please scan QR Code or use NFC to pay</string>
     <string name="payment_intro">Please scan QR Code to pay</string>
     <string name="payment_cancel">Cancel Payment</string>
-    <string name="payment_received">Payment Received</string>
-    <string name="payment_back_button">Go Back</string>
+    <string name="payment_received">Payment received</string>
+    <string name="payment_back_button">Continue</string>
     <string name="payment_order_ref">Order Reference: %s</string>
     <string name="payment_canceled">Payment Canceled</string>
 
