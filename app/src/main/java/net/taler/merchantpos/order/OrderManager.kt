@@ -43,6 +43,9 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
     private val mSelectedOrderLine = MutableLiveData<ConfigProduct>()
 
+    internal var lastAddedProduct: ConfigProduct? = null
+        private set
+
     internal val modifyOrderAllowed =
         CombinedLiveData(restartState, mSelectedOrderLine) { restartState, selectedOrderLine ->
             restartState != DISABLED && selectedOrderLine != null
@@ -113,6 +116,7 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
     @UiThread
     internal fun addProduct(product: ConfigProduct) {
+        lastAddedProduct = product
         val order = mOrder.value ?: newOrder
         mOrder.value = order + product
         mRestartState.value = ENABLED

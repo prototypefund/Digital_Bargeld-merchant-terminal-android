@@ -70,14 +70,7 @@ class OrderStateFragment : Fragment() {
         this.tracker = tracker
 
         orderManager.order.observe(viewLifecycleOwner, Observer { order ->
-            adapter.setItems(order.products) {
-                // workaround for bug: SelectionObserver doesn't update when removing selected item
-                if (tracker.hasSelection()) {
-                    val key = tracker.selection.first()
-                    val product = order.products.find { it.id == key }
-                    if (product == null) tracker.clearSelection()
-                }
-            }
+            onOrderChanged(order, tracker)
         })
         orderManager.orderTotal.observe(viewLifecycleOwner, Observer { orderTotal ->
             if (orderTotal == 0.0) {
@@ -94,6 +87,24 @@ class OrderStateFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         tracker?.onSaveInstanceState(outState)
+    }
+
+    private fun onOrderChanged(order: Order, tracker: SelectionTracker<String>) {
+        adapter.setItems(order.products) {
+            orderManager.lastAddedProduct?.let {
+                val position = adapter.findPosition(it)
+                if (position >= 0) {
+                    orderList.scrollToPosition(position)
+                    orderList.post { this.tracker?.select(it.id) }
+                }
+            }
+            // workaround for bug: SelectionObserver doesn't update when removing selected item
+            if (tracker.hasSelection()) {
+                val key = tracker.selection.first()
+                val product = order.products.find { it.id == key }
+                if (product == null) tracker.clearSelection()
+            }
+        }
     }
 
 }
@@ -135,6 +146,10 @@ private class OrderAdapter : Adapter<OrderViewHolder>() {
 
     fun getItemByKey(key: String): ConfigProduct? {
         return differ.currentList.find { it.id == key }
+    }
+
+    fun findPosition(product: ConfigProduct): Int {
+        return differ.currentList.indexOf(product)
     }
 
     private inner class OrderViewHolder(private val v: View) : ViewHolder(v) {
