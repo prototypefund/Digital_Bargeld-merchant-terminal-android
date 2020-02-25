@@ -13,7 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-import kotlinx.android.synthetic.main.fragment_merchant_settings.*
+import kotlinx.android.synthetic.main.fragment_merchant_config.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
 
@@ -30,7 +30,7 @@ class MerchantConfigFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_merchant_settings, container, false)
+        return inflater.inflate(R.layout.fragment_merchant_config, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,7 +58,6 @@ class MerchantConfigFragment : Fragment() {
             configManager.forgetPassword()
             passwordView.editText!!.text = null
             forgetPasswordButton.visibility = GONE
-            currencyView.visibility = GONE
         }
         updateView()
     }
@@ -80,14 +79,6 @@ class MerchantConfigFragment : Fragment() {
         passwordView.editText!!.setText(configManager.config.password)
 
         forgetPasswordButton.visibility = if (configManager.config.hasPassword()) VISIBLE else GONE
-
-        val currency = configManager.merchantConfig?.currency
-        if (currency == null) {
-            currencyView.visibility = GONE
-        } else {
-            currencyView.text = getString(R.string.config_currency, currency)
-            currencyView.visibility = VISIBLE
-        }
     }
 
     private fun checkInput(): Boolean {

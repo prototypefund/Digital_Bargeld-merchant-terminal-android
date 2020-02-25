@@ -43,7 +43,7 @@
             android:id="@+id/merchantSettings"
             android:name="net.taler.merchantpos.config.MerchantConfigFragment"
             android:label="Merchant Settings"
-            tools:layout="@layout/fragment_merchant_settings" />
+            tools:layout="@layout/fragment_merchant_config" />
 
     <fragment
             android:id="@+id/configFetcher"

@@ -9,7 +9,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
             tools:context=".config.MerchantConfigFragment">
 
         <com.google.android.material.textfield.TextInputLayout
@@ -86,27 +85,19 @@
                 android:id="@+id/savePasswordCheckBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
                 android:checked="true"
                 android:text="@string/config_save_password"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/okButton"
+                app:layout_constraintHorizontal_chainStyle="spread_inside"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/passwordView" />
+                app:layout_constraintTop_toBottomOf="@+id/passwordView"
+                app:layout_constraintVertical_bias="0.0" />
 
-        <TextView
-                android:id="@+id/currencyView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:textSize="18sp"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/savePasswordCheckBox"
-                tools:text="@string/config_currency"
-                tools:visibility="visible" />
-
-        <Button
+        <com.google.android.material.button.MaterialButton
                 android:id="@+id/okButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -114,10 +105,9 @@
                 android:text="@string/config_ok"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/currencyView"
-                app:layout_constraintVertical_bias="1.0" />
+                app:layout_constraintStart_toEndOf="@+id/savePasswordCheckBox"
+                app:layout_constraintTop_toBottomOf="@+id/passwordView"
+                app:layout_constraintVertical_bias="0.0" />
 
         <ProgressBar
                 android:id="@+id/progressBar"
