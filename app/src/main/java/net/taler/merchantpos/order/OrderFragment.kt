@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.NavController
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.transition.TransitionManager.beginDelayedTransition
 import kotlinx.android.synthetic.main.fragment_order.*
@@ -55,14 +53,16 @@ class OrderFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val nav: NavController = findNavController(requireActivity(), R.id.nav_host_fragment)
-        reconfigureButton.setOnClickListener { nav.navigate(R.id.action_order_to_merchantSettings) }
-        historyButton.setOnClickListener { nav.navigate(R.id.action_order_to_merchantHistory) }
-        logoutButton.setOnClickListener { nav.navigate(R.id.action_order_to_merchantSettings) }
+        reconfigureButton.setOnClickListener {
+            findNavController().navigate(R.id.action_order_to_merchantSettings)
+        }
+        historyButton.setOnClickListener {
+            findNavController().navigate(R.id.action_order_to_merchantHistory)
+        }
         completeButton.setOnClickListener {
             val order = orderManager.order.value ?: return@setOnClickListener
             paymentManager.createPayment(order)
-            nav.navigate(R.id.action_order_to_processPayment)
+            findNavController().navigate(R.id.action_order_to_processPayment)
         }
     }
 

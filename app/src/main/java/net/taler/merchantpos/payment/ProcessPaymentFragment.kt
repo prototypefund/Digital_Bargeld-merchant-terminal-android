@@ -9,13 +9,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import kotlinx.android.synthetic.main.fragment_process_payment.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.NfcManager.Companion.hasNfc
 import net.taler.merchantpos.QrCodeManager.makeQrCode
 import net.taler.merchantpos.R
+import net.taler.merchantpos.fadeIn
+import net.taler.merchantpos.fadeOut
 
 class ProcessPaymentFragment : Fragment() {
 
@@ -32,18 +34,19 @@ class ProcessPaymentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val introRes =
             if (hasNfc(requireContext())) R.string.payment_intro_nfc else R.string.payment_intro
-        textView2.setText(introRes)
+        payIntroView.setText(introRes)
         paymentManager.payment.observe(viewLifecycleOwner, Observer { payment ->
             onPaymentStateChanged(payment)
         })
-        button_cancel_payment.setOnClickListener {
+        cancelPaymentButton.setOnClickListener {
             onPaymentCancel()
         }
     }
 
     private fun onPaymentStateChanged(payment: Payment) {
         if (payment.error) {
-            Snackbar.make(view!!, "Network Error", LENGTH_SHORT).show()
+            Snackbar.make(view!!, R.string.error_network, LENGTH_LONG).show()
+            findNavController().navigateUp()
             return
         }
         if (payment.paid) {
@@ -51,19 +54,25 @@ class ProcessPaymentFragment : Fragment() {
             model.orderManager.restartOrUndo()
             return
         }
+        payIntroView.fadeIn()
         @SuppressLint("SetTextI18n")
-        text_view_amount.text = "${payment.order.totalAsString} ${payment.currency}"
-        text_view_order_reference.text = getString(R.string.payment_order_ref, payment.orderId)
+        amountView.text = "${payment.order.totalAsString} ${payment.currency}"
+        payment.orderId?.let {
+            orderRefView.text = getString(R.string.payment_order_ref, it)
+            orderRefView.fadeIn()
+        }
         payment.talerPayUri?.let {
             val qrcodeBitmap = makeQrCode(it)
-            qrcode.setImageBitmap(qrcodeBitmap)
+            qrcodeView.setImageBitmap(qrcodeBitmap)
+            qrcodeView.fadeIn()
+            progressBar.fadeOut()
         }
     }
 
     private fun onPaymentCancel() {
         paymentManager.cancelPayment()
-        findNavController().popBackStack()
-        Snackbar.make(view!!, "Payment Canceled", LENGTH_SHORT).show()
+        findNavController().navigateUp()
+        Snackbar.make(view!!, R.string.payment_canceled, LENGTH_LONG).show()
     }
 
 }

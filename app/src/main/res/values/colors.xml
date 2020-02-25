@@ -6,5 +6,7 @@
 
     <color name="selectedBackground">#DADADA</color>
     <color name="bottomButtons">#9E9D24</color>
-    <color name="logoutButton">#C62828</color>
+    <color name="logoutButton">@color/red</color>
+    <color name="red">#C62828</color>
+
 </resources>

@@ -33,8 +33,11 @@
     <string name="payment_received">Payment Received</string>
     <string name="payment_back_button">Go Back</string>
     <string name="payment_order_ref">Order Reference: %s</string>
+    <string name="payment_canceled">Payment Canceled</string>
 
     <string name="history_received_at">Received at</string>
     <string name="history_ref_no">Ref. No:</string>
+
+    <string name="error_network">Network Error</string>
 
 </resources>
