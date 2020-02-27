@@ -23,7 +23,8 @@ class OrderFragment : Fragment() {
     private val orderManager by lazy { viewModel.orderManager }
     private val paymentManager by lazy { viewModel.paymentManager }
     private val args: OrderFragmentArgs by navArgs()
-    private val liveOrder by lazy { orderManager.getOrder(args.orderId) }
+    private val orderId: Int get() = args.orderId
+    private val liveOrder by lazy { orderManager.getOrder(orderId) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +47,6 @@ class OrderFragment : Fragment() {
                 restartButton.isEnabled = state == ENABLED
                 completeButton.isEnabled = state == ENABLED
             }
-            nextButton.isEnabled = state == ENABLED
         })
         minusButton.setOnClickListener { liveOrder.decreaseSelectedOrderLine() }
         plusButton.setOnClickListener { liveOrder.increaseSelectedOrderLine() }
@@ -54,8 +54,9 @@ class OrderFragment : Fragment() {
             minusButton.isEnabled = allowed
             plusButton.isEnabled = allowed
         })
-        orderManager.hasPreviousOrder.observe(viewLifecycleOwner, Observer { hasPreviousOrder ->
-            prevButton.isEnabled = hasPreviousOrder
+        prevButton.isEnabled = orderManager.hasPreviousOrder(orderId)
+        orderManager.hasNextOrder(orderId).observe(viewLifecycleOwner, Observer { hasNextOrder ->
+            nextButton.isEnabled = hasNextOrder
         })
     }
 

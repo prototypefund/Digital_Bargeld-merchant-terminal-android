@@ -4,10 +4,12 @@ import android.util.Log
 import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations.map
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.taler.merchantpos.Amount.Companion.fromString
 import net.taler.merchantpos.config.ConfigurationReceiver
+import net.taler.merchantpos.order.RestartState.ENABLED
 import org.json.JSONObject
 
 class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
@@ -23,9 +25,6 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private val productsByCategory = HashMap<Category, ArrayList<ConfigProduct>>()
 
     private val orders = LinkedHashMap<Int, MutableLiveOrder>()
-
-    private val mHasPreviousOrder = MutableLiveData<Boolean>(false)
-    internal val hasPreviousOrder: LiveData<Boolean> = mHasPreviousOrder
 
     private val mProducts = MutableLiveData<List<ConfigProduct>>()
     internal val products: LiveData<List<ConfigProduct>> = mProducts
@@ -113,16 +112,9 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
             orders[nextId] = MutableLiveOrder(nextId, productsByCategory)
         }
         val currentOrder = order(currentId)
-        val stillHasPrevious = if (currentOrder.isEmpty()) {
-            val wasFirst = orders.keys.first() == currentId
-            orders.remove(currentId)
-            !wasFirst  // we still have a previous order if the removed one wasn't the first
-        } else {
-            currentOrder.lastAddedProduct = null  // not needed anymore and would select it
-            true  // we did not remove anything, so our next order still has a previous
-        }
+        if (currentOrder.isEmpty()) orders.remove(currentId)
+        else currentOrder.lastAddedProduct = null  // not needed anymore and it would get selected
         mCurrentOrderId.value = nextId
-        mHasPreviousOrder.value = stillHasPrevious
     }
 
     @UiThread
@@ -146,7 +138,14 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         if (currentOrder.isEmpty()) orders.remove(currentId)
         else currentOrder.lastAddedProduct = null
         mCurrentOrderId.value = previousId
-        mHasPreviousOrder.value = previousId != orders.keys.first()
+    }
+
+    fun hasPreviousOrder(currentOrderId: Int): Boolean {
+        return currentOrderId != orders.keys.first()
+    }
+
+    fun hasNextOrder(currentOrderId: Int) = map(order(currentOrderId).restartState) { state ->
+        state == ENABLED || currentOrderId != orders.keys.last()
     }
 
     internal fun setCurrentCategory(category: Category) {
@@ -166,11 +165,8 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     @UiThread
     internal fun onOrderPaid(orderId: Int) {
         if (currentOrderId.value == orderId) {
-            if (hasPreviousOrder.value!!) previousOrder()
-            else {
-                nextOrder()
-                mHasPreviousOrder.value = false
-            }
+            if (hasPreviousOrder(orderId)) previousOrder()
+            else nextOrder()
         }
         orders.remove(orderId)
     }
