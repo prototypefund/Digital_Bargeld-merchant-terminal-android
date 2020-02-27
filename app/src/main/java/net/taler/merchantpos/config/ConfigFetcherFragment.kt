@@ -12,6 +12,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
+import net.taler.merchantpos.config.ConfigFetcherFragmentDirections.Companion.actionConfigFetcherToOrder
 
 class ConfigFetcherFragment : Fragment() {
 
@@ -32,7 +33,7 @@ class ConfigFetcherFragment : Fragment() {
             when {
                 result == null -> return@Observer
                 result.error -> onNetworkError(result.authError)
-                else -> findNavController().navigate(R.id.action_configFetcher_to_order)
+                else -> actionConfigFetcherToOrder().let { findNavController().navigate(it) }
             }
         })
     }

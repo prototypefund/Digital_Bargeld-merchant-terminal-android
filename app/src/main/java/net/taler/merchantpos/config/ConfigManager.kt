@@ -27,6 +27,10 @@ private const val SETTINGS_CONFIG_URL = "configUrl"
 private const val SETTINGS_USERNAME = "username"
 private const val SETTINGS_PASSWORD = "password"
 
+internal const val CONFIG_URL_DEMO = "https://grobox.de/taler/pos.json"
+internal const val CONFIG_USERNAME_DEMO = "torsten"
+internal const val CONFIG_PASSWORD_DEMO = "test"
+
 private val TAG = ConfigManager::class.java.simpleName
 
 interface ConfigurationReceiver {
@@ -117,7 +121,12 @@ class ConfigManager(
 
         var configValid = true
         configurationReceivers.forEach {
-            val result = it.onConfigurationReceived(configJson, currency)
+            val result = try {
+                it.onConfigurationReceived(configJson, currency)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error handling configuration by ${it::class.java.simpleName}", e)
+                false
+            }
             configValid = result && configValid
         }
         if (configValid) {

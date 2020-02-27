@@ -60,7 +60,7 @@ class MerchantConfigFragment : Fragment() {
             passwordView.editText!!.text = null
             forgetPasswordButton.visibility = GONE
         }
-        updateView()
+        updateView(savedInstanceState == null)
     }
 
     override fun onStart() {
@@ -74,12 +74,21 @@ class MerchantConfigFragment : Fragment() {
         }
     }
 
-    private fun updateView() {
-        configUrlView.editText!!.setText(configManager.config.configUrl)
-        usernameView.editText!!.setText(configManager.config.username)
-        passwordView.editText!!.setText(configManager.config.password)
-
-        forgetPasswordButton.visibility = if (configManager.config.hasPassword()) VISIBLE else GONE
+    private fun updateView(isInitialization: Boolean = false) {
+        val config = configManager.config
+        configUrlView.editText!!.setText(
+            if (isInitialization && config.configUrl.isBlank()) CONFIG_URL_DEMO
+            else config.configUrl
+        )
+        usernameView.editText!!.setText(
+            if (isInitialization && config.username.isBlank()) CONFIG_USERNAME_DEMO
+            else config.username
+        )
+        passwordView.editText!!.setText(
+            if (isInitialization && config.password.isBlank()) CONFIG_PASSWORD_DEMO
+            else config.password
+        )
+        forgetPasswordButton.visibility = if (config.hasPassword()) VISIBLE else GONE
     }
 
     private fun checkInput(): Boolean {

@@ -8,12 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.transition.TransitionManager.beginDelayedTransition
 import kotlinx.android.synthetic.main.fragment_order.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
-import net.taler.merchantpos.order.OrderFragmentDirections.Companion.actionGlobalOrder
 import net.taler.merchantpos.order.RestartState.ENABLED
 import net.taler.merchantpos.order.RestartState.UNDO
 
@@ -22,9 +20,6 @@ class OrderFragment : Fragment() {
     private val viewModel: MainViewModel by activityViewModels()
     private val orderManager by lazy { viewModel.orderManager }
     private val paymentManager by lazy { viewModel.paymentManager }
-    private val args: OrderFragmentArgs by navArgs()
-    private val orderId: Int get() = args.orderId
-    private val liveOrder by lazy { orderManager.getOrder(orderId) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,7 +29,32 @@ class OrderFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_order, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        orderManager.currentOrderId.observe(viewLifecycleOwner, Observer { orderId ->
+            val liveOrder = orderManager.getOrder(orderId)
+            onOrderSwitched(orderId, liveOrder)
+            // add a new OrderStateFragment for each order
+            // as switching its internals (like we do here) would be too messy
+            childFragmentManager.beginTransaction()
+                .replace(R.id.fragment1, OrderStateFragment())
+                .commit()
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (viewModel.configManager.needsConfig() || viewModel.configManager.merchantConfig?.currency == null) {
+            findNavController().navigate(R.id.action_global_merchantSettings)
+        }
+    }
+
+    private fun onOrderSwitched(orderId: Int, liveOrder: LiveOrder) {
+        // order title
+        liveOrder.order.observe(viewLifecycleOwner, Observer { order ->
+            activity?.title = getString(R.string.order_label_title, order.title)
+        })
+        // restart button
         restartButton.setOnClickListener { liveOrder.restartOrUndo() }
         liveOrder.restartState.observe(viewLifecycleOwner, Observer { state ->
             beginDelayedTransition(view as ViewGroup)
@@ -48,41 +68,25 @@ class OrderFragment : Fragment() {
                 completeButton.isEnabled = state == ENABLED
             }
         })
-        minusButton.setOnClickListener { liveOrder.decreaseSelectedOrderLine() }
-        plusButton.setOnClickListener { liveOrder.increaseSelectedOrderLine() }
+        // -1 and +1 buttons
         liveOrder.modifyOrderAllowed.observe(viewLifecycleOwner, Observer { allowed ->
             minusButton.isEnabled = allowed
             plusButton.isEnabled = allowed
         })
+        minusButton.setOnClickListener { liveOrder.decreaseSelectedOrderLine() }
+        plusButton.setOnClickListener { liveOrder.increaseSelectedOrderLine() }
+        // previous and next button
         prevButton.isEnabled = orderManager.hasPreviousOrder(orderId)
         orderManager.hasNextOrder(orderId).observe(viewLifecycleOwner, Observer { hasNextOrder ->
             nextButton.isEnabled = hasNextOrder
         })
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        liveOrder.order.observe(viewLifecycleOwner, Observer { order ->
-            activity?.title = getString(R.string.order_label_title, order.title)
-        })
         prevButton.setOnClickListener { orderManager.previousOrder() }
         nextButton.setOnClickListener { orderManager.nextOrder() }
+        // complete button
         completeButton.setOnClickListener {
             val order = liveOrder.order.value ?: return@setOnClickListener
             paymentManager.createPayment(order)
             findNavController().navigate(R.id.action_order_to_processPayment)
-        }
-        orderManager.currentOrderId.observe(viewLifecycleOwner, Observer { orderId ->
-            if (args.orderId != orderId) {
-                findNavController().navigate(actionGlobalOrder(orderId))
-            }
-        })
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (viewModel.configManager.needsConfig() || viewModel.configManager.merchantConfig?.currency == null) {
-            findNavController().navigate(R.id.action_global_merchantSettings)
         }
     }
 

@@ -166,7 +166,7 @@ private class OrderAdapter : Adapter<OrderViewHolder>() {
         fun bind(product: ConfigProduct, selected: Boolean) {
             v.isActivated = selected
             quantity.text = product.quantity.toString()
-            name.text = product.description
+            name.text = product.localizedDescription
             price.text = String.format("%.2f", product.priceAsDouble * product.quantity)
         }
     }

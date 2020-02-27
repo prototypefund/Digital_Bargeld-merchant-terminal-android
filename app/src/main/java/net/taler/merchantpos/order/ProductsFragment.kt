@@ -86,7 +86,7 @@ private class ProductAdapter(
         private val price: TextView = v.findViewById(R.id.price)
 
         fun bind(product: ConfigProduct) {
-            name.text = product.description
+            name.text = product.localizedDescription
             price.text = product.priceAsDouble.toString()
             v.setOnClickListener { listener.onProductSelected(product) }
         }

@@ -81,7 +81,7 @@ private class CategoryAdapter(
         private val button: Button = v.findViewById(R.id.button)
 
         fun bind(category: Category) {
-            button.text = category.name
+            button.text = category.localizedName
             button.isPressed = category.selected
             button.setOnClickListener { listener.onCategorySelected(category) }
         }

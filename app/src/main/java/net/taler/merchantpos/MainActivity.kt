@@ -5,20 +5,21 @@ import android.content.Intent.ACTION_MAIN
 import android.content.Intent.CATEGORY_HOME
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
+import android.os.Handler
 import android.view.MenuItem
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat.START
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.navigation.NavigationView
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
-
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.app_bar_main.*
 
 class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
@@ -26,7 +27,8 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     private val nfcManager = NfcManager()
 
     private lateinit var nav: NavController
-    private lateinit var drawerLayout: DrawerLayout
+
+    private var reallyExit = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,23 +40,20 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
             }
         })
 
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        drawerLayout = findViewById(R.id.drawer_layout)
-        val navView: NavigationView = findViewById(R.id.nav_view)
-        navView.setNavigationItemSelectedListener(this)
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.order,
-                R.id.merchantSettings,
-                R.id.merchantHistory
-            ), drawerLayout
-        )
-
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         nav = navHostFragment.navController
+
+        nav_view.setupWithNavController(nav)
+        nav_view.setNavigationItemSelectedListener(this)
+        if (savedInstanceState == null) {
+            nav_view.menu.getItem(0).isChecked = true
+        }
+
+        setSupportActionBar(toolbar)
+        val appBarConfiguration = AppBarConfiguration(
+            setOf(R.id.order, R.id.merchantSettings, R.id.merchantHistory), drawer_layout
+        )
         toolbar.setupWithNavController(nav, appBarConfiguration)
     }
 
@@ -85,14 +84,13 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
             R.id.nav_history -> nav.navigate(R.id.action_global_merchantHistory)
             R.id.nav_settings -> nav.navigate(R.id.action_global_merchantSettings)
         }
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        drawerLayout.closeDrawer(START)
+        drawer_layout.closeDrawer(START)
         return true
     }
 
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(START)) {
-            drawerLayout.closeDrawer(START)
+        if (drawer_layout.isDrawerOpen(START)) {
+            drawer_layout.closeDrawer(START)
         } else if (nav.currentDestination?.id == R.id.merchantSettings && model.configManager.needsConfig()) {
             // we are in the configuration screen and need a config to continue
             val intent = Intent(ACTION_MAIN).apply {
@@ -100,9 +98,14 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
                 flags = FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(intent)
-        } else {
-            super.onBackPressed()
-        }
+        } else if (nav.currentDestination?.id == R.id.order) {
+            if (reallyExit) super.onBackPressed()
+            else {
+                reallyExit = true
+                Toast.makeText(this, R.string.toast_back_to_exit, LENGTH_SHORT).show()
+                Handler().postDelayed({ reallyExit = false }, 3000)
+            }
+        } else super.onBackPressed()
     }
 
 }

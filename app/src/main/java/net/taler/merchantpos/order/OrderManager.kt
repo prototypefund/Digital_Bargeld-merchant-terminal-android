@@ -54,6 +54,10 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
         productsByCategory.clear()
         val seenIds = ArrayList<String>()
         products.forEach { product ->
+            if (product.defaultDescription == null) {
+                Log.e(TAG, "Product $product has no default description \"_\"")
+                return false
+            }
             val productCurrency = fromString(product.price).currency
             if (productCurrency != currency) {
                 Log.e(TAG, "Product $product has currency $productCurrency, $currency expected")
@@ -73,6 +77,10 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
                 if (productsByCategory.containsKey(category)) {
                     productsByCategory[category]?.add(product)
                 } else {
+                    if (category.defaultName == null) {
+                        Log.e(TAG, "Category $category has no default description \"_\"")
+                        return false
+                    }
                     productsByCategory[category] = ArrayList<ConfigProduct>().apply { add(product) }
                 }
             }
