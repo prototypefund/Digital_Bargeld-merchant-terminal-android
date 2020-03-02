@@ -1,6 +1,7 @@
 package net.taler.merchantpos.config
 
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -60,6 +61,7 @@ class MerchantConfigFragment : Fragment() {
             passwordView.editText!!.text = null
             forgetPasswordButton.visibility = GONE
         }
+        configDocsView.movementMethod = LinkMovementMethod.getInstance()
         updateView(savedInstanceState == null)
     }
 
