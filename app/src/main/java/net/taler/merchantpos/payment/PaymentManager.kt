@@ -32,6 +32,10 @@ class PaymentManager(
     private val mapper: ObjectMapper
 ) {
 
+    companion object {
+        val TAG = PaymentManager::class.java.simpleName
+    }
+
     private val mPayment = MutableLiveData<Payment>()
     val payment: LiveData<Payment> = mPayment
 
@@ -54,6 +58,7 @@ class PaymentManager(
         val currency = merchantConfig.currency!!
         val amount = "$currency:${order.totalAsString}"
         val summary = order.summary
+        val summaryI18n = order.summaryI18n
 
         mPayment.value = Payment(order, summary, currency)
 
@@ -64,12 +69,15 @@ class PaymentManager(
             put("order", JSONObject().apply {
                 put("amount", amount)
                 put("summary", summary)
+                if (summaryI18n != null) put("summary_i18n", order.summaryI18n)
                 // fulfillment_url needs to be unique per order
                 put("fulfillment_url", fulfillmentUrl)
                 put("instance", "default")
                 put("products", order.getProductsJson())
             })
         }
+
+        Log.d(TAG, body.toString(4))
 
         val req = MerchantRequest(POST, merchantConfig, "order", null, body,
             Listener { onOrderCreated(it) },

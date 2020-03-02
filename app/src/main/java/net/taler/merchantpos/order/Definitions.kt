@@ -2,6 +2,8 @@ package net.taler.merchantpos.order
 
 import androidx.core.os.LocaleListCompat
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import net.taler.merchantpos.Amount
 import java.util.*
@@ -11,30 +13,31 @@ import kotlin.collections.HashMap
 
 data class Category(
     val id: Int,
-    val name: Map<String, String>
+    val name: String,
+    @JsonProperty("name_i18n")
+    val nameI18n: Map<String, String>?
 ) {
-    val defaultName: String? get() = name["_"]
     var selected: Boolean = false
-    val localizedName: String get() = getLocalizedString(name, defaultName!!)
+    val localizedName: String get() = getLocalizedString(nameI18n, name)
 }
 
 abstract class Product {
     abstract val id: String
-    abstract val description: Map<String, String>
+    abstract val description: String
+    abstract val descriptionI18n: Map<String, String>?
     abstract val price: String
     abstract val location: String?
     @get:JsonIgnore
-    val defaultDescription: String?
-        get() = description["_"]
-    @get:JsonIgnore
     val localizedDescription: String
-        get() = getLocalizedString(description, defaultDescription!!)
+        get() = getLocalizedString(descriptionI18n, description)
 }
 
 data class ConfigProduct(
     @JsonProperty("product_id")
     override val id: String,
-    override val description: Map<String, String>,
+    override val description: String,
+    @JsonProperty("description_i18n")
+    override val descriptionI18n: Map<String, String>?,
     override val price: String,
     @JsonProperty("delivery_location")
     override val location: String?,
@@ -61,8 +64,10 @@ data class ConfigProduct(
 data class ContractProduct(
     @JsonProperty("product_id")
     override val id: String,
-    @get:JsonIgnore
-    override val description: Map<String, String>,
+    override val description: String,
+    @JsonInclude(NON_NULL)
+    @JsonProperty("description_i18n")
+    override val descriptionI18n: Map<String, String>?,
     override val price: String,
     @JsonProperty("delivery_location")
     override val location: String?,
@@ -71,20 +76,16 @@ data class ContractProduct(
     constructor(product: ConfigProduct) : this(
         product.id,
         product.description,
+        product.descriptionI18n,
         product.price,
         product.location,
         product.quantity
     )
-
-    // TODO remove once backend supports i18n
-    @get:JsonProperty("description")
-    val tmpDescription: String
-        get() = localizedDescription
 }
 
-private fun getLocalizedString(map: Map<String, String>, default: String): String {
+private fun getLocalizedString(map: Map<String, String>?, default: String): String {
     // just return the default, if it is the only element
-    if (map.size == 1) return default
+    if (map == null) return default
     // create a priority list of language ranges from system locales
     val locales = LocaleListCompat.getDefault()
     val priorityList = ArrayList<LanguageRange>(locales.size())
@@ -109,19 +110,10 @@ private fun getLocalizedString(map: Map<String, String>, default: String): Strin
 data class Order(val id: Int, val availableCategories: Map<Int, Category>) {
     val products = ArrayList<ConfigProduct>()
     val title: String = id.toString()
-    val summary: String  // TODO also support i18n map here?
-        get() {
-            val categories = HashMap<Category, Int>()
-            products.forEach { product ->
-                val categoryId = product.categories[0]
-                val category = availableCategories.getValue(categoryId)
-                val oldQuantity = categories[category] ?: 0
-                categories[category] = oldQuantity + product.quantity
-            }
-            return categories.map { (category, quantity) ->
+    val summary: String
+        get() = getCategoryQuantities().map { (category: Category, quantity: Int) ->
                 "$quantity x ${category.localizedName}"
-            }.joinToString()
-        }
+        }.joinToString()
     val total: Double
         get() {
             var total = 0.0
@@ -156,4 +148,45 @@ data class Order(val id: Int, val availableCategories: Map<Int, Category>) {
         }
         return this
     }
+
+    private fun getCategoryQuantities(): HashMap<Category, Int> {
+        val categories = HashMap<Category, Int>()
+        products.forEach { product ->
+            val categoryId = product.categories[0]
+            val category = availableCategories.getValue(categoryId)
+            val oldQuantity = categories[category] ?: 0
+            categories[category] = oldQuantity + product.quantity
+        }
+        return categories
+    }
+
+    /**
+     * Returns a map of i18n summaries for each locale present in *all* given [Category]s
+     * or null if there's no locale that fulfills this criteria.
+     */
+    val summaryI18n: Map<String, String>?
+        get() {
+            val categoryQuantities = getCategoryQuantities()
+            // get all available locales
+            val availableLocales = categoryQuantities.mapNotNull { (category, _) ->
+                val nameI18n = category.nameI18n
+                // if one category doesn't have locales, we can return null here already
+                nameI18n?.keys ?: return null
+            }.flatten().toHashSet()
+            // remove all locales not supported by all categories
+            categoryQuantities.forEach { (category, _) ->
+                // category.nameI18n should be non-null now
+                availableLocales.retainAll(category.nameI18n!!.keys)
+                if (availableLocales.isEmpty()) return null
+            }
+            return availableLocales.map { locale ->
+                Pair(
+                    locale, categoryQuantities.map { (category, quantity) ->
+                        // category.nameI18n should be non-null now
+                        "$quantity x ${category.nameI18n!![locale]}"
+                    }.joinToString()
+                )
+            }.toMap()
+        }
+
 }
