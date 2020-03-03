@@ -21,11 +21,15 @@ data class Category(
     val localizedName: String get() = getLocalizedString(nameI18n, name)
 }
 
+@JsonInclude(NON_NULL)
 abstract class Product {
-    abstract val id: String
+    @get:JsonProperty("product_id")
+    abstract val productId: String?
     abstract val description: String
+    @get:JsonProperty("description_i18n")
     abstract val descriptionI18n: Map<String, String>?
     abstract val price: String
+    @get:JsonProperty("delivery_location")
     abstract val location: String?
     @get:JsonIgnore
     val localizedDescription: String
@@ -33,13 +37,12 @@ abstract class Product {
 }
 
 data class ConfigProduct(
-    @JsonProperty("product_id")
-    override val id: String,
+    @JsonIgnore
+    val id: String = UUID.randomUUID().toString(),
+    override val productId: String?,
     override val description: String,
-    @JsonProperty("description_i18n")
     override val descriptionI18n: Map<String, String>?,
     override val price: String,
-    @JsonProperty("delivery_location")
     override val location: String?,
     val categories: List<Int>,
     @JsonIgnore
@@ -47,34 +50,20 @@ data class ConfigProduct(
 ) : Product() {
     val priceAsDouble by lazy { Amount.fromString(price).amount.toDouble() }
 
-    override fun equals(other: Any?): Boolean {
-        return other is ConfigProduct && id == other.id
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + description.hashCode()
-        result = 31 * result + price.hashCode()
-        result = 31 * result + (location?.hashCode() ?: 0)
-        result = 31 * result + categories.hashCode()
-        return result
-    }
+    override fun equals(other: Any?) = other is ConfigProduct && id == other.id
+    override fun hashCode() = id.hashCode()
 }
 
 data class ContractProduct(
-    @JsonProperty("product_id")
-    override val id: String,
+    override val productId: String?,
     override val description: String,
-    @JsonInclude(NON_NULL)
-    @JsonProperty("description_i18n")
     override val descriptionI18n: Map<String, String>?,
     override val price: String,
-    @JsonProperty("delivery_location")
     override val location: String?,
     val quantity: Int
 ) : Product() {
     constructor(product: ConfigProduct) : this(
-        product.id,
+        product.productId,
         product.description,
         product.descriptionI18n,
         product.price,
@@ -112,7 +101,7 @@ data class Order(val id: Int, val availableCategories: Map<Int, Category>) {
     val title: String = id.toString()
     val summary: String
         get() = getCategoryQuantities().map { (category: Category, quantity: Int) ->
-                "$quantity x ${category.localizedName}"
+            "$quantity x ${category.localizedName}"
         }.joinToString()
     val total: Double
         get() {
