@@ -37,12 +37,16 @@ class MerchantConfigFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         okButton.setOnClickListener {
-            if (!checkInput()) return@setOnClickListener
-            configUrlView.error = null
+            val inputUrl = configUrlView.editText!!.text
+            val url = if (inputUrl.startsWith("http")) {
+                inputUrl.toString()
+            } else {
+                "https://$inputUrl".also { configUrlView.editText!!.setText(it) }
+            }
             progressBar.visibility = VISIBLE
             okButton.visibility = INVISIBLE
             val config = Config(
-                configUrl = configUrlView.editText!!.text.toString(),
+                configUrl = url,
                 username = usernameView.editText!!.text.toString(),
                 password = passwordView.editText!!.text.toString()
             )
@@ -91,15 +95,6 @@ class MerchantConfigFragment : Fragment() {
             else config.password
         )
         forgetPasswordButton.visibility = if (config.hasPassword()) VISIBLE else GONE
-    }
-
-    private fun checkInput(): Boolean {
-        return if (configUrlView.editText!!.text.startsWith("https://")) {
-            true
-        } else {
-            configUrlView.error = getString(R.string.config_malformed_url)
-            false
-        }
     }
 
     private fun onConfigReceived(currency: String) {
