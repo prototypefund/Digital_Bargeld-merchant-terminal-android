@@ -12,7 +12,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
+import net.taler.merchantpos.config.ConfigFetcherFragmentDirections.Companion.actionConfigFetcherToMerchantSettings
 import net.taler.merchantpos.config.ConfigFetcherFragmentDirections.Companion.actionConfigFetcherToOrder
+import net.taler.merchantpos.navigate
 
 class ConfigFetcherFragment : Fragment() {
 
@@ -28,12 +30,12 @@ class ConfigFetcherFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
+        configManager.fetchConfig(configManager.config, false)
         configManager.configUpdateResult.observe(viewLifecycleOwner, Observer { result ->
             when {
                 result == null -> return@Observer
                 result.error -> onNetworkError(result.authError)
-                else -> actionConfigFetcherToOrder().let { findNavController().navigate(it) }
+                else -> actionConfigFetcherToOrder().navigate(findNavController())
             }
         })
     }
@@ -41,7 +43,7 @@ class ConfigFetcherFragment : Fragment() {
     private fun onNetworkError(authError: Boolean) {
         val res = if (authError) R.string.config_auth_error else R.string.config_error
         Snackbar.make(view!!, res, LENGTH_SHORT).show()
-        findNavController().navigate(R.id.action_configFetcher_to_merchantSettings)
+        actionConfigFetcherToMerchantSettings().navigate(findNavController())
     }
 
 }

@@ -17,6 +17,8 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_merchant_config.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
+import net.taler.merchantpos.config.MerchantConfigFragmentDirections.Companion.actionSettingsToOrder
+import net.taler.merchantpos.navigate
 import net.taler.merchantpos.topSnackbar
 
 /**
@@ -101,7 +103,7 @@ class MerchantConfigFragment : Fragment() {
         onResultReceived()
         updateView()
         topSnackbar(view!!, getString(R.string.config_changed, currency), LENGTH_LONG)
-        findNavController().navigate(R.id.order)
+        actionSettingsToOrder().navigate(findNavController())
     }
 
     private fun onNetworkError(authError: Boolean) {

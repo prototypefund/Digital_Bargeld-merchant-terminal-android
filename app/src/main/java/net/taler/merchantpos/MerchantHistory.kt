@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import kotlinx.android.synthetic.main.fragment_merchant_history.*
 import net.taler.merchantpos.HistoryItemAdapter.HistoryItemViewHolder
+import net.taler.merchantpos.MerchantHistoryDirections.Companion.actionGlobalMerchantSettings
 import net.taler.merchantpos.config.MerchantRequest
 import org.json.JSONObject
 import java.time.Instant
@@ -84,7 +85,7 @@ class MerchantHistory : Fragment() {
     override fun onStart() {
         super.onStart()
         if (model.configManager.merchantConfig?.instance == null) {
-            findNavController().navigate(R.id.action_global_merchantSettings)
+            actionGlobalMerchantSettings().navigate(findNavController())
         } else {
             fetchHistory()
         }

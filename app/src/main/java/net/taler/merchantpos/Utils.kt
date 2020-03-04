@@ -7,6 +7,8 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
+import androidx.navigation.NavController
+import androidx.navigation.NavDirections
 import com.google.android.material.snackbar.BaseTransientBottomBar.ANIMATION_MODE_FADE
 import com.google.android.material.snackbar.BaseTransientBottomBar.Duration
 import com.google.android.material.snackbar.Snackbar.make
@@ -76,6 +78,8 @@ fun topSnackbar(view: View, text: CharSequence, @Duration duration: Int) {
 fun topSnackbar(view: View, @StringRes resId: Int, @Duration duration: Int) {
     topSnackbar(view, view.resources.getText(resId), duration)
 }
+
+fun NavDirections.navigate(nav: NavController) = nav.navigate(this)
 
 class CombinedLiveData<T, K, S>(
     source1: LiveData<T>,

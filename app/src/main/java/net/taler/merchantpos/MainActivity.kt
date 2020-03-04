@@ -46,22 +46,17 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
         nav_view.setupWithNavController(nav)
         nav_view.setNavigationItemSelectedListener(this)
-        if (savedInstanceState == null) {
-            nav_view.menu.getItem(0).isChecked = true
-        }
 
         setSupportActionBar(toolbar)
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.order, R.id.merchantSettings, R.id.merchantHistory), drawer_layout
-        )
+        val appBarConfiguration = AppBarConfiguration(nav.graph, drawer_layout)
         toolbar.setupWithNavController(nav, appBarConfiguration)
     }
 
     override fun onStart() {
         super.onStart()
-        if (model.configManager.needsConfig()) {
+        if (!model.configManager.config.isValid() && nav.currentDestination?.id != R.id.nav_settings) {
             nav.navigate(R.id.action_global_merchantSettings)
-        } else if (model.configManager.merchantConfig == null) {
+        } else if (model.configManager.merchantConfig == null && nav.currentDestination?.id != R.id.configFetcher) {
             nav.navigate(R.id.action_global_configFetcher)
         }
     }
@@ -78,7 +73,6 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.nav_order -> nav.navigate(R.id.action_global_order)
             R.id.nav_history -> nav.navigate(R.id.action_global_merchantHistory)
@@ -89,18 +83,20 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     }
 
     override fun onBackPressed() {
+        val currentDestination = nav.currentDestination?.id
         if (drawer_layout.isDrawerOpen(START)) {
             drawer_layout.closeDrawer(START)
-        } else if (nav.currentDestination?.id == R.id.merchantSettings && model.configManager.needsConfig()) {
+        } else if (currentDestination == R.id.nav_settings && !model.configManager.config.isValid()) {
             // we are in the configuration screen and need a config to continue
             val intent = Intent(ACTION_MAIN).apply {
                 addCategory(CATEGORY_HOME)
                 flags = FLAG_ACTIVITY_NEW_TASK
             }
             startActivity(intent)
-        } else if (nav.currentDestination?.id == R.id.order) {
+        } else if (currentDestination == R.id.nav_order) {
             if (reallyExit) super.onBackPressed()
             else {
+                // this closes the app and causes orders to be lost, so let's confirm first
                 reallyExit = true
                 Toast.makeText(this, R.string.toast_back_to_exit, LENGTH_SHORT).show()
                 Handler().postDelayed({ reallyExit = false }, 3000)

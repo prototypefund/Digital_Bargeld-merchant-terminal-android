@@ -3,26 +3,27 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/nav_graph"
-        app:startDestination="@id/order"
+        app:startDestination="@+id/nav_order"
         tools:ignore="UnusedNavigation">
 
     <fragment
-            android:id="@+id/order"
+            android:id="@+id/nav_order"
             android:name="net.taler.merchantpos.order.OrderFragment"
             android:label=""
             tools:layout="@layout/fragment_order">
         <action
-                android:id="@+id/action_order_to_processPayment"
-                app:destination="@id/processPayment" />
-        <action
-                android:id="@+id/action_order_to_merchantHistory"
-                app:destination="@id/merchantHistory" />
-        <action
                 android:id="@+id/action_order_to_merchantSettings"
-                app:destination="@id/merchantSettings" />
+                app:destination="@+id/nav_settings"
+                app:launchSingleTop="true"
+                app:popUpTo="@+id/nav_graph"
+                app:popUpToInclusive="true" />
         <action
                 android:id="@+id/action_order_self"
-                app:destination="@id/order" />
+                app:destination="@+id/nav_order"
+                app:popUpTo="@+id/nav_graph" />
+        <action
+                android:id="@+id/action_order_to_processPayment"
+                app:destination="@+id/processPayment" />
     </fragment>
 
     <fragment
@@ -32,21 +33,28 @@
             tools:layout="@layout/fragment_process_payment">
         <action
                 android:id="@+id/action_processPayment_to_paymentSuccess"
-                app:destination="@id/paymentSuccess"
-                app:popUpTo="@id/order" />
+                app:destination="@+id/paymentSuccess"
+                app:popUpTo="@id/nav_order" />
     </fragment>
 
     <fragment
-            android:id="@+id/merchantHistory"
+            android:id="@+id/nav_history"
             android:name="net.taler.merchantpos.MerchantHistory"
             android:label="@string/history_label"
             tools:layout="@layout/fragment_merchant_history" />
 
     <fragment
-            android:id="@+id/merchantSettings"
+            android:id="@+id/nav_settings"
             android:name="net.taler.merchantpos.config.MerchantConfigFragment"
             android:label="@string/config_label"
-            tools:layout="@layout/fragment_merchant_config" />
+            tools:layout="@layout/fragment_merchant_config">
+        <action
+                android:id="@+id/action_settings_to_order"
+                app:destination="@+id/nav_order"
+                app:launchSingleTop="true"
+                app:popUpTo="@+id/nav_graph"
+                app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
             android:id="@+id/configFetcher"
@@ -55,11 +63,13 @@
             tools:layout="@layout/fragment_config_fetcher">
         <action
                 android:id="@+id/action_configFetcher_to_merchantSettings"
-                app:destination="@id/merchantSettings"
+                app:destination="@+id/nav_settings"
+                app:launchSingleTop="true"
+                app:popUpTo="@+id/nav_graph"
                 app:popUpToInclusive="true" />
         <action
                 android:id="@+id/action_configFetcher_to_order"
-                app:destination="@id/order"
+                app:destination="@+id/nav_order"
                 app:launchSingleTop="true"
                 app:popUpTo="@+id/nav_graph"
                 app:popUpToInclusive="true" />
@@ -73,15 +83,20 @@
 
     <action
             android:id="@+id/action_global_order"
-            app:destination="@id/order" />
+            app:destination="@+id/nav_order"
+            app:launchSingleTop="true"
+            app:popUpTo="@+id/nav_graph" />
     <action
             android:id="@+id/action_global_merchantHistory"
-            app:destination="@id/merchantHistory" />
+            app:destination="@+id/nav_history"
+            app:launchSingleTop="true" />
     <action
             android:id="@+id/action_global_merchantSettings"
-            app:destination="@id/merchantSettings" />
+            app:destination="@+id/nav_settings"
+            app:launchSingleTop="true" />
     <action
             android:id="@+id/action_global_configFetcher"
-            app:destination="@id/configFetcher" />
+            app:destination="@+id/configFetcher"
+            app:launchSingleTop="true" />
 
 </navigation>

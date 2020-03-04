@@ -12,6 +12,10 @@ import androidx.transition.TransitionManager.beginDelayedTransition
 import kotlinx.android.synthetic.main.fragment_order.*
 import net.taler.merchantpos.MainViewModel
 import net.taler.merchantpos.R
+import net.taler.merchantpos.navigate
+import net.taler.merchantpos.order.OrderFragmentDirections.Companion.actionGlobalConfigFetcher
+import net.taler.merchantpos.order.OrderFragmentDirections.Companion.actionOrderToMerchantSettings
+import net.taler.merchantpos.order.OrderFragmentDirections.Companion.actionOrderToProcessPayment
 import net.taler.merchantpos.order.RestartState.ENABLED
 import net.taler.merchantpos.order.RestartState.UNDO
 
@@ -44,8 +48,10 @@ class OrderFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        if (viewModel.configManager.needsConfig() || viewModel.configManager.merchantConfig?.currency == null) {
-            findNavController().navigate(R.id.action_global_merchantSettings)
+        if (!viewModel.configManager.config.isValid()) {
+            actionOrderToMerchantSettings().navigate(findNavController())
+        } else if (viewModel.configManager.merchantConfig?.currency == null) {
+            actionGlobalConfigFetcher().navigate(findNavController())
         }
     }
 
@@ -86,7 +92,7 @@ class OrderFragment : Fragment() {
         completeButton.setOnClickListener {
             val order = liveOrder.order.value ?: return@setOnClickListener
             paymentManager.createPayment(order)
-            findNavController().navigate(R.id.action_order_to_processPayment)
+            actionOrderToProcessPayment().navigate(findNavController())
         }
     }
 

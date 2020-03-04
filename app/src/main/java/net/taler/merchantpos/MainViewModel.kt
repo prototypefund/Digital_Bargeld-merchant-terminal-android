@@ -24,12 +24,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
     val paymentManager = PaymentManager(configManager, queue, mapper)
 
-    init {
-        if (configManager.merchantConfig == null && configManager.config.isValid()) {
-            configManager.fetchConfig(configManager.config, false)
-        }
-    }
-
     override fun onCleared() {
         queue.cancelAll { !it.isCanceled }
     }

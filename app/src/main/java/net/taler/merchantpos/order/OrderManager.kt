@@ -81,9 +81,11 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
             mCategories.postValue(categories)
             mProducts.postValue(productsByCategory[categories[0]])
             // Initialize first empty order, note this won't work when updating config mid-flight
-            val id = orderCounter++
-            orders[id] = MutableLiveOrder(id, productsByCategory)
-            mCurrentOrderId.postValue(id)
+            if (orders.isEmpty()) {
+                val id = orderCounter++
+                orders[id] = MutableLiveOrder(id, productsByCategory)
+                mCurrentOrderId.postValue(id)
+            }
             true
         } else {
             false

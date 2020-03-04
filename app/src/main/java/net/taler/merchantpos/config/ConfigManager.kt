@@ -27,9 +27,9 @@ private const val SETTINGS_CONFIG_URL = "configUrl"
 private const val SETTINGS_USERNAME = "username"
 private const val SETTINGS_PASSWORD = "password"
 
-internal const val CONFIG_URL_DEMO = "https://grobox.de/taler/pos.json"
-internal const val CONFIG_USERNAME_DEMO = "torsten"
-internal const val CONFIG_PASSWORD_DEMO = "test"
+internal const val CONFIG_URL_DEMO = "https://docs.taler.net/_static/sample-pos-config.json"
+internal const val CONFIG_USERNAME_DEMO = ""
+internal const val CONFIG_PASSWORD_DEMO = ""
 
 private val TAG = ConfigManager::class.java.simpleName
 
@@ -51,9 +51,9 @@ class ConfigManager(
     private val configurationReceivers = ArrayList<ConfigurationReceiver>()
 
     var config = Config(
-        configUrl = prefs.getString(SETTINGS_CONFIG_URL, "")!!,
-        username = prefs.getString(SETTINGS_USERNAME, "")!!,
-        password = prefs.getString(SETTINGS_PASSWORD, "")!!
+        configUrl = prefs.getString(SETTINGS_CONFIG_URL, CONFIG_URL_DEMO)!!,
+        username = prefs.getString(SETTINGS_USERNAME, CONFIG_USERNAME_DEMO)!!,
+        password = prefs.getString(SETTINGS_PASSWORD, CONFIG_PASSWORD_DEMO)!!
     )
     var merchantConfig: MerchantConfig? = null
         private set
@@ -63,14 +63,6 @@ class ConfigManager(
 
     fun addConfigurationReceiver(receiver: ConfigurationReceiver) {
         configurationReceivers.add(receiver)
-    }
-
-    /**
-     * Returns true if the user needs to provide more configuration
-     * and false if the configuration is sufficient to continue.
-     */
-    fun needsConfig(): Boolean {
-        return !config.isValid() || (!config.hasPassword() && merchantConfig == null)
     }
 
     @UiThread
