@@ -1,5 +1,6 @@
 package net.taler.merchantpos.order
 
+import android.content.Context
 import android.util.Log
 import androidx.annotation.UiThread
 import androidx.lifecycle.LiveData
@@ -8,11 +9,15 @@ import androidx.lifecycle.Transformations.map
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.taler.merchantpos.Amount.Companion.fromString
+import net.taler.merchantpos.R
 import net.taler.merchantpos.config.ConfigurationReceiver
 import net.taler.merchantpos.order.RestartState.ENABLED
 import org.json.JSONObject
 
-class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
+class OrderManager(
+    private val context: Context,
+    private val mapper: ObjectMapper
+) : ConfigurationReceiver {
 
     companion object {
         val TAG = OrderManager::class.java.simpleName
@@ -32,15 +37,14 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
     private val mCategories = MutableLiveData<List<Category>>()
     internal val categories: LiveData<List<Category>> = mCategories
 
-    @Suppress("BlockingMethodInNonBlockingContext") // run on Dispatchers.Main
-    override suspend fun onConfigurationReceived(json: JSONObject, currency: String): Boolean {
+    override suspend fun onConfigurationReceived(json: JSONObject, currency: String): String? {
         // parse categories
         val categoriesStr = json.getJSONArray("categories").toString()
         val categoriesType = object : TypeReference<List<Category>>() {}
         val categories: List<Category> = mapper.readValue(categoriesStr, categoriesType)
         if (categories.isEmpty()) {
             Log.e(TAG, "No valid category found.")
-            return false
+            return context.getString(R.string.config_error_category)
         }
         // pre-select the first category
         categories[0].selected = true
@@ -52,23 +56,21 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
 
         // group products by categories
         productsByCategory.clear()
-        val seenIds = ArrayList<String>()
         products.forEach { product ->
             val productCurrency = fromString(product.price).currency
             if (productCurrency != currency) {
                 Log.e(TAG, "Product $product has currency $productCurrency, $currency expected")
-                return false
+                return context.getString(
+                    R.string.config_error_currency, product.description, productCurrency, currency
+                )
             }
-            if (seenIds.contains(product.id)) {
-                Log.e(TAG, "Product $product has duplicate product_id ${product.id}")
-                return false
-            }
-            seenIds.add(product.id)
             product.categories.forEach { categoryId ->
                 val category = categories.find { it.id == categoryId }
                 if (category == null) {
                     Log.e(TAG, "Product $product has unknown category $categoryId")
-                    return false
+                    return context.getString(
+                        R.string.config_error_product_category_id, product.description, categoryId
+                    )
                 }
                 if (productsByCategory.containsKey(category)) {
                     productsByCategory[category]?.add(product)
@@ -86,10 +88,8 @@ class OrderManager(private val mapper: ObjectMapper) : ConfigurationReceiver {
                 orders[id] = MutableLiveOrder(id, productsByCategory)
                 mCurrentOrderId.postValue(id)
             }
-            true
-        } else {
-            false
-        }
+            null // success, no error string
+        } else context.getString(R.string.config_error_product_zero)
     }
 
     @UiThread

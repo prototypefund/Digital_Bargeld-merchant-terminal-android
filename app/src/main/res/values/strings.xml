@@ -21,9 +21,14 @@
     <string name="config_username">Username</string>
     <string name="config_password">Password</string>
     <string name="config_ok">Fetch Configuration</string>
-    <string name="config_malformed_url">Invalid URL</string>
-    <string name="config_auth_error">Invalid username or password</string>
-    <string name="config_error">Error: Invalid Configuration</string>
+    <string name="config_auth_error">Error: Invalid username or password</string>
+    <string name="config_error_network">Error: Could not connect to configuration server</string>
+    <string name="config_error_category">Error: No valid product category found</string>
+    <string name="config_error_malformed">Error: The configuration JSON is malformed</string>
+    <string name="config_error_currency">Error: Product %1$s has currency %2$s, but %3$s expected</string>
+    <string name="config_error_product_category_id">Error: Product %1$s references unknown category ID %2$d</string>
+    <string name="config_error_product_zero">Error: No valid products found</string>
+    <string name="config_error_unknown">Error: Invalid Configuration</string>
     <string name="config_fetching">Fetching Configuration…</string>
     <string name="config_save_password">Remember Password</string>
     <string name="config_forget_password">Forget</string>

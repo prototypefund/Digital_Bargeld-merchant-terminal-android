@@ -128,7 +128,7 @@ private class OrderAdapter : Adapter<OrderViewHolder>() {
             return oldItem.quantity == newItem.quantity
         }
     }
-    private val differ = AsyncListDiffer<ConfigProduct>(this, itemCallback)
+    private val differ = AsyncListDiffer(this, itemCallback)
 
     override fun getItemCount() = differ.currentList.size
 

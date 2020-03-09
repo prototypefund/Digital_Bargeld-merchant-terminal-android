@@ -54,12 +54,9 @@ class MerchantConfigFragment : Fragment() {
             )
             configManager.fetchConfig(config, true, savePasswordCheckBox.isChecked)
             configManager.configUpdateResult.observe(viewLifecycleOwner, Observer { result ->
-                when {
-                    result == null -> return@Observer
-                    result.error -> onNetworkError(result.authError)
-                    else -> onConfigReceived(result.currency!!)
+                if (onConfigUpdate(result)) {
+                    configManager.configUpdateResult.removeObservers(viewLifecycleOwner)
                 }
-                configManager.configUpdateResult.removeObservers(viewLifecycleOwner)
             })
         }
         forgetPasswordButton.setOnClickListener {
@@ -99,6 +96,21 @@ class MerchantConfigFragment : Fragment() {
         forgetPasswordButton.visibility = if (config.hasPassword()) VISIBLE else GONE
     }
 
+    /**
+     * Processes updated config and returns true, if observer can be removed.
+     */
+    private fun onConfigUpdate(result: ConfigUpdateResult?) = when (result) {
+        null -> false
+        is ConfigUpdateResult.Error -> {
+            onError(result.msg)
+            true
+        }
+        is ConfigUpdateResult.Success -> {
+            onConfigReceived(result.currency)
+            true
+        }
+    }
+
     private fun onConfigReceived(currency: String) {
         onResultReceived()
         updateView()
@@ -106,10 +118,9 @@ class MerchantConfigFragment : Fragment() {
         actionSettingsToOrder().navigate(findNavController())
     }
 
-    private fun onNetworkError(authError: Boolean) {
+    private fun onError(msg: String) {
         onResultReceived()
-        val res = if (authError) R.string.config_auth_error else R.string.config_error
-        Snackbar.make(view!!, res, LENGTH_LONG).show()
+        Snackbar.make(view!!, msg, LENGTH_LONG).show()
     }
 
     private fun onResultReceived() {

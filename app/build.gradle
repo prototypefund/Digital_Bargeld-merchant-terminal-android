@@ -30,6 +30,12 @@ android {
         jvmTarget = "1.8"
     }
 
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
     lintOptions {
         abortOnError true
         ignoreWarnings false
@@ -64,4 +70,7 @@ dependencies {
 
     // JSON parsing and serialization
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2"
+
+    testImplementation 'androidx.test.ext:junit:1.1.1'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
 }

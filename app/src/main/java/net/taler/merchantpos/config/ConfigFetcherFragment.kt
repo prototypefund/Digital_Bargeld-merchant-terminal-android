@@ -32,17 +32,18 @@ class ConfigFetcherFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         configManager.fetchConfig(configManager.config, false)
         configManager.configUpdateResult.observe(viewLifecycleOwner, Observer { result ->
-            when {
-                result == null -> return@Observer
-                result.error -> onNetworkError(result.authError)
-                else -> actionConfigFetcherToOrder().navigate(findNavController())
+            when (result) {
+                null -> return@Observer
+                is ConfigUpdateResult.Error -> onNetworkError(result.msg)
+                is ConfigUpdateResult.Success -> {
+                    actionConfigFetcherToOrder().navigate(findNavController())
+                }
             }
         })
     }
 
-    private fun onNetworkError(authError: Boolean) {
-        val res = if (authError) R.string.config_auth_error else R.string.config_error
-        Snackbar.make(view!!, res, LENGTH_SHORT).show()
+    private fun onNetworkError(msg: String) {
+        Snackbar.make(view!!, msg, LENGTH_SHORT).show()
         actionConfigFetcherToMerchantSettings().navigate(findNavController())
     }
 

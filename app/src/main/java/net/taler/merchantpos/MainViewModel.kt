@@ -18,7 +18,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
     private val queue = Volley.newRequestQueue(app)
 
-    val orderManager = OrderManager(mapper)
+    val orderManager = OrderManager(app, mapper)
     val configManager = ConfigManager(app, viewModelScope, mapper, queue).apply {
         addConfigurationReceiver(orderManager)
     }

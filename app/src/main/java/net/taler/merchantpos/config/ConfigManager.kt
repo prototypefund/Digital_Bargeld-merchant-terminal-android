@@ -19,6 +19,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.taler.merchantpos.R
 import org.json.JSONObject
 
 private const val SETTINGS_NAME = "taler-merchant-terminal"
@@ -35,13 +36,13 @@ private val TAG = ConfigManager::class.java.simpleName
 
 interface ConfigurationReceiver {
     /**
-     * Returns true if the configuration was valid, false otherwise.
+     * Returns null if the configuration was valid, or a error string for user display otherwise.
      */
-    suspend fun onConfigurationReceived(json: JSONObject, currency: String): Boolean
+    suspend fun onConfigurationReceived(json: JSONObject, currency: String): String?
 }
 
 class ConfigManager(
-    context: Context,
+    private val context: Context,
     private val scope: CoroutineScope,
     private val mapper: ObjectMapper,
     private val queue: RequestQueue
@@ -86,12 +87,14 @@ class ConfigManager(
         queue.add(stringRequest)
     }
 
+    @UiThread
     private fun onConfigReceived(json: JSONObject, config: Config?) {
         val merchantConfig: MerchantConfig = try {
             mapper.readValue(json.getString("config"))
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing merchant config", e)
-            mConfigUpdateResult.value = ConfigUpdateResult(null)
+            val msg = context.getString(R.string.config_error_malformed)
+            mConfigUpdateResult.value = ConfigUpdateResult.Error(msg)
             return
         }
 
@@ -108,29 +111,27 @@ class ConfigManager(
         configJson: JSONObject,
         merchantConfig: MerchantConfig,
         json: JSONObject
-    ) = scope.launch(Dispatchers.Main) {
+    ) = scope.launch(Dispatchers.Default) {
         val currency = json.getString("currency")
 
-        var configValid = true
-        configurationReceivers.forEach {
+        for (receiver in configurationReceivers) {
             val result = try {
-                it.onConfigurationReceived(configJson, currency)
+                receiver.onConfigurationReceived(configJson, currency)
             } catch (e: Exception) {
-                Log.e(TAG, "Error handling configuration by ${it::class.java.simpleName}", e)
-                false
+                Log.e(TAG, "Error handling configuration by ${receiver::class.java.simpleName}", e)
+                context.getString(R.string.config_error_unknown)
             }
-            configValid = result && configValid
-        }
-        if (configValid) {
-            newConfig?.let {
-                config = it
-                saveConfig(it)
+            if (result != null) {  // error
+                mConfigUpdateResult.postValue(ConfigUpdateResult.Error(result))
+                return@launch
             }
-            this@ConfigManager.merchantConfig = merchantConfig.copy(currency = currency)
-            mConfigUpdateResult.value = ConfigUpdateResult(currency)
-        } else {
-            mConfigUpdateResult.value = ConfigUpdateResult(null)
         }
+        newConfig?.let {
+            config = it
+            saveConfig(it)
+        }
+        this@ConfigManager.merchantConfig = merchantConfig.copy(currency = currency)
+        mConfigUpdateResult.postValue(ConfigUpdateResult.Success(currency))
     }
 
     fun forgetPassword() {
@@ -147,13 +148,18 @@ class ConfigManager(
             .apply()
     }
 
+    @UiThread
     private fun onNetworkError(it: VolleyError?) {
-        val authError = it?.networkResponse?.statusCode == 401
-        mConfigUpdateResult.value = ConfigUpdateResult(null, authError)
+        val msg = context.getString(
+            if (it?.networkResponse?.statusCode == 401) R.string.config_auth_error
+            else R.string.config_error_network
+        )
+        mConfigUpdateResult.value = ConfigUpdateResult.Error(msg)
     }
 
 }
 
-class ConfigUpdateResult(val currency: String?, val authError: Boolean = false) {
-    val error: Boolean = currency == null
+sealed class ConfigUpdateResult {
+    data class Error(val msg: String) : ConfigUpdateResult()
+    data class Success(val currency: String) : ConfigUpdateResult()
 }
