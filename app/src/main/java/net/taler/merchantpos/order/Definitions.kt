@@ -31,6 +31,7 @@ abstract class Product {
     abstract val price: String
     @get:JsonProperty("delivery_location")
     abstract val location: String?
+    abstract val image: String?
     @get:JsonIgnore
     val localizedDescription: String
         get() = getLocalizedString(descriptionI18n, description)
@@ -44,6 +45,7 @@ data class ConfigProduct(
     override val descriptionI18n: Map<String, String>?,
     override val price: String,
     override val location: String?,
+    override val image: String?,
     val categories: List<Int>,
     @JsonIgnore
     val quantity: Int = 0
@@ -60,6 +62,7 @@ data class ContractProduct(
     override val descriptionI18n: Map<String, String>?,
     override val price: String,
     override val location: String?,
+    override val image: String?,
     val quantity: Int
 ) : Product() {
     constructor(product: ConfigProduct) : this(
@@ -68,6 +71,7 @@ data class ContractProduct(
         product.descriptionI18n,
         product.price,
         product.location,
+        product.image,
         product.quantity
     )
 }
