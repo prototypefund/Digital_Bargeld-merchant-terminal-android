@@ -16,6 +16,16 @@
 
 package net.taler.merchantpos
 
+import android.content.Context
+import android.text.format.DateUtils.DAY_IN_MILLIS
+import android.text.format.DateUtils.FORMAT_ABBREV_MONTH
+import android.text.format.DateUtils.FORMAT_ABBREV_RELATIVE
+import android.text.format.DateUtils.FORMAT_NO_YEAR
+import android.text.format.DateUtils.FORMAT_SHOW_DATE
+import android.text.format.DateUtils.FORMAT_SHOW_TIME
+import android.text.format.DateUtils.MINUTE_IN_MILLIS
+import android.text.format.DateUtils.formatDateTime
+import android.text.format.DateUtils.getRelativeTimeSpanString
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
@@ -97,6 +107,14 @@ fun topSnackbar(view: View, @StringRes resId: Int, @Duration duration: Int) {
 
 fun NavDirections.navigate(nav: NavController) = nav.navigate(this)
 
+fun Long.toRelativeTime(context: Context): CharSequence {
+    val now = System.currentTimeMillis()
+    return if (now - this > DAY_IN_MILLIS * 2) {
+        val flags = FORMAT_SHOW_TIME or FORMAT_SHOW_DATE or FORMAT_ABBREV_MONTH or FORMAT_NO_YEAR
+        formatDateTime(context, this, flags)
+    } else getRelativeTimeSpanString(this, now, MINUTE_IN_MILLIS, FORMAT_ABBREV_RELATIVE)
+}
+
 class CombinedLiveData<T, K, S>(
     source1: LiveData<T>,
     source2: LiveData<K>,
@@ -125,3 +143,9 @@ class CombinedLiveData<T, K, S>(
         throw UnsupportedOperationException()
     }
 }
+
+/**
+ * Use this with 'when' expressions when you need it to handle all possibilities/branches.
+ */
+val <T> T.exhaustive: T
+    get() = this

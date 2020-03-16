@@ -47,7 +47,7 @@
 
     <string name="history_label">Payment History</string>
     <string name="history_received_at">Received at</string>
-    <string name="history_ref_no">Ref. No:</string>
+    <string name="history_ref_no">Ref. No: %s</string>
 
     <string name="error_network">Network Error</string>
 

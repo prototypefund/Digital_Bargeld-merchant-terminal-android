@@ -55,7 +55,7 @@
 
     <fragment
             android:id="@+id/nav_history"
-            android:name="net.taler.merchantpos.MerchantHistory"
+            android:name="net.taler.merchantpos.history.MerchantHistoryFragment"
             android:label="@string/history_label"
             tools:layout="@layout/fragment_merchant_history" />
 
