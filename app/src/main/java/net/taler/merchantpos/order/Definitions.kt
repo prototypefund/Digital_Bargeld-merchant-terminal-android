@@ -120,9 +120,12 @@ data class Order(val id: Int, val availableCategories: Map<Int, Category>) {
     val products = ArrayList<ConfigProduct>()
     val title: String = id.toString()
     val summary: String
-        get() = getCategoryQuantities().map { (category: Category, quantity: Int) ->
-            "$quantity x ${category.localizedName}"
-        }.joinToString()
+        get() {
+            if (products.size == 1) return products[0].description
+            return getCategoryQuantities().map { (category: Category, quantity: Int) ->
+                "$quantity x ${category.localizedName}"
+            }.joinToString()
+        }
     val total: Double
         get() {
             var total = 0.0
@@ -175,6 +178,7 @@ data class Order(val id: Int, val availableCategories: Map<Int, Category>) {
      */
     val summaryI18n: Map<String, String>?
         get() {
+            if (products.size == 1) return products[0].descriptionI18n
             val categoryQuantities = getCategoryQuantities()
             // get all available locales
             val availableLocales = categoryQuantities.mapNotNull { (category, _) ->
