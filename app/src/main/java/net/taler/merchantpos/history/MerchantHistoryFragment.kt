@@ -22,11 +22,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,14 +40,19 @@ import net.taler.merchantpos.R
 import net.taler.merchantpos.exhaustive
 import net.taler.merchantpos.history.HistoryItemAdapter.HistoryItemViewHolder
 import net.taler.merchantpos.history.MerchantHistoryFragmentDirections.Companion.actionGlobalMerchantSettings
+import net.taler.merchantpos.history.MerchantHistoryFragmentDirections.Companion.actionNavHistoryToRefundFragment
 import net.taler.merchantpos.navigate
 import net.taler.merchantpos.toRelativeTime
 import java.util.*
 
+private interface RefundClickListener {
+    fun onRefundClicked(item: HistoryItem)
+}
+
 /**
  * Fragment to display the merchant's payment history, received from the backend.
  */
-class MerchantHistoryFragment : Fragment() {
+class MerchantHistoryFragment : Fragment(), RefundClickListener {
 
     companion object {
         const val TAG = "taler-merchant"
@@ -55,8 +60,9 @@ class MerchantHistoryFragment : Fragment() {
 
     private val model: MainViewModel by activityViewModels()
     private val historyManager by lazy { model.historyManager }
+    private val refundManager by lazy { model.refundManager }
 
-    private val historyListAdapter = HistoryItemAdapter()
+    private val historyListAdapter = HistoryItemAdapter(this)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -91,7 +97,7 @@ class MerchantHistoryFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         if (model.configManager.merchantConfig?.instance == null) {
-            actionGlobalMerchantSettings().navigate(findNavController())
+            navigate(actionGlobalMerchantSettings())
         } else {
             historyManager.fetchHistory()
         }
@@ -101,9 +107,15 @@ class MerchantHistoryFragment : Fragment() {
         Snackbar.make(view!!, R.string.error_network, LENGTH_SHORT).show()
     }
 
+    override fun onRefundClicked(item: HistoryItem) {
+        refundManager.startRefund(item)
+        navigate(actionNavHistoryToRefundFragment())
+    }
+
 }
 
-internal class HistoryItemAdapter : Adapter<HistoryItemViewHolder>() {
+private class HistoryItemAdapter(private val listener: RefundClickListener) :
+    Adapter<HistoryItemViewHolder>() {
 
     private val items = ArrayList<HistoryItem>()
 
@@ -125,12 +137,13 @@ internal class HistoryItemAdapter : Adapter<HistoryItemViewHolder>() {
         this.notifyDataSetChanged()
     }
 
-    internal class HistoryItemViewHolder(private val v: View) : ViewHolder(v) {
+    private inner class HistoryItemViewHolder(private val v: View) : ViewHolder(v) {
 
         private val orderSummaryView: TextView = v.findViewById(R.id.orderSummaryView)
         private val orderAmountView: TextView = v.findViewById(R.id.orderAmountView)
         private val orderTimeView: TextView = v.findViewById(R.id.orderTimeView)
         private val orderIdView: TextView = v.findViewById(R.id.orderIdView)
+        private val refundButton: ImageButton = v.findViewById(R.id.refundButton)
 
         fun bind(item: HistoryItem) {
             orderSummaryView.text = item.summary
@@ -139,6 +152,7 @@ internal class HistoryItemAdapter : Adapter<HistoryItemViewHolder>() {
             orderAmountView.text = "${amount.amount} ${amount.currency}"
             orderIdView.text = v.context.getString(R.string.history_ref_no, item.orderId)
             orderTimeView.text = item.time.toRelativeTime(v.context)
+            refundButton.setOnClickListener { listener.onRefundClicked(item) }
         }
 
     }

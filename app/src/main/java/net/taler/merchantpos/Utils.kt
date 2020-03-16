@@ -30,11 +30,13 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import androidx.annotation.StringRes
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar.ANIMATION_MODE_FADE
 import com.google.android.material.snackbar.BaseTransientBottomBar.Duration
 import com.google.android.material.snackbar.Snackbar.make
@@ -106,6 +108,8 @@ fun topSnackbar(view: View, @StringRes resId: Int, @Duration duration: Int) {
 }
 
 fun NavDirections.navigate(nav: NavController) = nav.navigate(this)
+
+fun Fragment.navigate(directions: NavDirections) = findNavController().navigate(directions)
 
 fun Long.toRelativeTime(context: Context): CharSequence {
     val now = System.currentTimeMillis()

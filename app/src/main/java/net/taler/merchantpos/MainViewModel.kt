@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import net.taler.merchantpos.config.ConfigManager
 import net.taler.merchantpos.history.HistoryManager
+import net.taler.merchantpos.history.RefundManager
 import net.taler.merchantpos.order.OrderManager
 import net.taler.merchantpos.payment.PaymentManager
 
@@ -41,6 +42,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
     val paymentManager = PaymentManager(configManager, queue, mapper)
     val historyManager = HistoryManager(configManager, queue, mapper)
+    val refundManager = RefundManager(configManager, queue)
 
     override fun onCleared() {
         queue.cancelAll { !it.isCanceled }

@@ -48,6 +48,18 @@
     <string name="history_label">Payment History</string>
     <string name="history_received_at">Received at</string>
     <string name="history_ref_no">Ref. No: %s</string>
+    <string name="history_refund">Refund Order</string>
+    <string name="refund_amount">Amount</string>
+    <string name="refund_reason">Refund reason</string>
+    <string name="refund_abort">Abort</string>
+    <string name="refund_confirm">Give Refund</string>
+    <string name="refund_error_max_amount">Greater than order amount of %s</string>
+    <string name="refund_error_zero">Needs to be positive amount</string>
+    <string name="refund_error_backend">Error processing refund</string>
+    <string name="refund_error_deadline">Refund deadline has passed</string>
+    <string name="refund_intro_nfc">Please scan QR Code or use NFC to give refund</string>
+    <string name="refund_intro">Please scan QR Code to give refund</string>
+    <string name="refund_order_ref">Order Reference: %1$s\n\n%2$s</string>
 
     <string name="error_network">Network Error</string>
 

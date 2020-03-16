@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ This file is part of GNU Taler
   ~ (C) 2020 Taler Systems S.A.
   ~
@@ -57,7 +56,27 @@
             android:id="@+id/nav_history"
             android:name="net.taler.merchantpos.history.MerchantHistoryFragment"
             android:label="@string/history_label"
-            tools:layout="@layout/fragment_merchant_history" />
+            tools:layout="@layout/fragment_merchant_history">
+        <action
+                android:id="@+id/action_nav_history_to_refundFragment"
+                app:destination="@id/refundFragment" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/refundFragment"
+            android:name="net.taler.merchantpos.history.RefundFragment"
+            android:label="@string/history_refund"
+            tools:layout="@layout/fragment_refund">
+        <action
+                android:id="@+id/action_refundFragment_to_refundUriFragment"
+                app:destination="@id/refundUriFragment" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/refundUriFragment"
+            android:name="net.taler.merchantpos.history.RefundUriFragment"
+            android:label="@string/history_refund"
+            tools:layout="@layout/fragment_refund_uri" />
 
     <fragment
             android:id="@+id/nav_settings"
