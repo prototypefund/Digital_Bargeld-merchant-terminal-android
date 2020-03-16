@@ -16,6 +16,7 @@
 
 package net.taler.merchantpos.config
 
+import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -54,7 +55,11 @@ class MerchantConfigFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        configUrlView.editText!!.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) checkForUrlCredentials()
+        }
         okButton.setOnClickListener {
+            checkForUrlCredentials()
             val inputUrl = configUrlView.editText!!.text
             val url = if (inputUrl.startsWith("http")) {
                 inputUrl.toString()
@@ -110,6 +115,19 @@ class MerchantConfigFragment : Fragment() {
             else config.password
         )
         forgetPasswordButton.visibility = if (config.hasPassword()) VISIBLE else GONE
+    }
+
+    private fun checkForUrlCredentials() {
+        val text = configUrlView.editText!!.text.toString()
+        Uri.parse(text)?.userInfo?.let { userInfo ->
+            if (userInfo.contains(':')) {
+                val (user, pass) = userInfo.split(':')
+                val strippedUrl = text.replace("${userInfo}@", "")
+                configUrlView.editText!!.setText(strippedUrl)
+                usernameView.editText!!.setText(user)
+                passwordView.editText!!.setText(pass)
+            }
+        }
     }
 
     /**
